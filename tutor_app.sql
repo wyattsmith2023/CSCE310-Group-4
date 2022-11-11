@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 11, 2022 at 11:24 PM
+-- Generation Time: Nov 11, 2022 at 11:48 PM
 -- Server version: 5.7.24
 -- PHP Version: 8.0.1
 
@@ -282,7 +282,7 @@ ALTER TABLE `appointment`
 --
 ALTER TABLE `availability`
   ADD PRIMARY KEY (`AVAILABILITY_ID`),
-  ADD KEY `fk_tutor_id5` (`TUTOR_ID`);
+  ADD KEY `fk_tutor_id2` (`TUTOR_ID`);
 
 --
 -- Indexes for table `class`
@@ -295,7 +295,7 @@ ALTER TABLE `class`
 --
 ALTER TABLE `class_bridge`
   ADD PRIMARY KEY (`CLASSES_BRIDGE_ID`),
-  ADD KEY `fk_tutor_id2` (`TUTOR_ID`),
+  ADD KEY `fk_tutor_id3` (`TUTOR_ID`),
   ADD KEY `fk_class_id1` (`CLASS_ID`);
 
 --
@@ -303,8 +303,8 @@ ALTER TABLE `class_bridge`
 --
 ALTER TABLE `review`
   ADD PRIMARY KEY (`REVIEW_ID`),
-  ADD KEY `fk_tutor_id3` (`TUTOR_ID`),
-  ADD KEY `fk_student_id3` (`STUDENT_ID`);
+  ADD KEY `fk_tutor_id4` (`TUTOR_ID`),
+  ADD KEY `fk_student_id2` (`STUDENT_ID`);
 
 --
 -- Indexes for table `student`
@@ -337,7 +337,7 @@ ALTER TABLE `tag`
 --
 ALTER TABLE `tag_bridge`
   ADD PRIMARY KEY (`TAG_BRIDGE_ID`),
-  ADD KEY `fk_review_id2` (`REVIEW_ID`),
+  ADD KEY `fk_review_id1` (`REVIEW_ID`),
   ADD KEY `fk_tag_id1` (`TAG_ID`);
 
 --
@@ -361,29 +361,35 @@ ALTER TABLE `user`
 --
 ALTER TABLE `appointment`
   ADD CONSTRAINT `fk_availability_id1` FOREIGN KEY (`AVAILABILITY_ID`) REFERENCES `availability` (`AVAILABILITY_ID`),
-  ADD CONSTRAINT `fk_student_id` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
-  ADD CONSTRAINT `fk_subject_id` FOREIGN KEY (`SUBJECT_ID`) REFERENCES `subject` (`SUBJECT_ID`),
-  ADD CONSTRAINT `fk_tutor_id` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+  ADD CONSTRAINT `fk_student_id1` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
+  ADD CONSTRAINT `fk_subject_id1` FOREIGN KEY (`SUBJECT_ID`) REFERENCES `subject` (`SUBJECT_ID`),
+  ADD CONSTRAINT `fk_tutor_id1` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
 
 --
 -- Constraints for table `availability`
 --
 ALTER TABLE `availability`
-  ADD CONSTRAINT `fk_tutor_id5` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+  ADD CONSTRAINT `fk_tutor_id2` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
 
 --
 -- Constraints for table `class_bridge`
 --
 ALTER TABLE `class_bridge`
   ADD CONSTRAINT `fk_class_id1` FOREIGN KEY (`CLASS_ID`) REFERENCES `class` (`CLASS_ID`),
-  ADD CONSTRAINT `fk_tutor_id2` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+  ADD CONSTRAINT `fk_tutor_id3` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
 
 --
 -- Constraints for table `review`
 --
 ALTER TABLE `review`
-  ADD CONSTRAINT `fk_student_id3` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
-  ADD CONSTRAINT `fk_tutor_id3` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+  ADD CONSTRAINT `fk_student_id2` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
+  ADD CONSTRAINT `fk_tutor_id4` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+
+--
+-- Constraints for table `student`
+--
+ALTER TABLE `student`
+  ADD CONSTRAINT `fk_user_id3` FOREIGN KEY (`USER_ID`) REFERENCES `user` (`USER_ID`);
 
 --
 -- Constraints for table `subject_bridge`
@@ -396,8 +402,14 @@ ALTER TABLE `subject_bridge`
 -- Constraints for table `tag_bridge`
 --
 ALTER TABLE `tag_bridge`
-  ADD CONSTRAINT `fk_review_id2` FOREIGN KEY (`REVIEW_ID`) REFERENCES `review` (`REVIEW_ID`),
+  ADD CONSTRAINT `fk_review_id1` FOREIGN KEY (`REVIEW_ID`) REFERENCES `review` (`REVIEW_ID`),
   ADD CONSTRAINT `fk_tag_id1` FOREIGN KEY (`TAG_ID`) REFERENCES `tag` (`TAG_ID`);
+
+--
+-- Constraints for table `tutor`
+--
+ALTER TABLE `tutor`
+  ADD CONSTRAINT `fk_user_id2` FOREIGN KEY (`USER_ID`) REFERENCES `user` (`USER_ID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
