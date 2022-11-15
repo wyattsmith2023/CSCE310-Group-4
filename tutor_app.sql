@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.2
+-- version 5.1.0
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Nov 11, 2022 at 11:24 PM
--- Server version: 5.7.24
--- PHP Version: 8.0.1
+-- Host: localhost:8889
+-- Generation Time: Nov 15, 2022 at 02:27 AM
+-- Server version: 5.7.34
+-- PHP Version: 7.4.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,52 +18,39 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tutor_app`
+-- Database: `Tutoring`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `appointment`
+-- Table structure for table `APPOINTMENT`
 --
 
-CREATE TABLE `appointment` (
+CREATE TABLE `APPOINTMENT` (
   `APPOINTMENT_ID` int(50) NOT NULL,
+  `LOCATION` varchar(50) NOT NULL,
+  `TIME` time(6) NOT NULL,
+  `DATE` date NOT NULL,
   `STUDENT_ID` int(50) NOT NULL,
   `TUTOR_ID` int(50) NOT NULL,
-  `SUBJECT_ID` int(50) NOT NULL,
-  `AVAILABILITY_ID` int(11) DEFAULT NULL,
-  `LOCATION` varchar(50) DEFAULT NULL
+  `SUBJECT_ID` int(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `appointment`
+-- Dumping data for table `APPOINTMENT`
 --
 
-INSERT INTO `appointment` (`APPOINTMENT_ID`, `STUDENT_ID`, `TUTOR_ID`, `SUBJECT_ID`, `AVAILABILITY_ID`, `LOCATION`) VALUES
-(1, 1, 2, 1, NULL, NULL);
+INSERT INTO `APPOINTMENT` (`APPOINTMENT_ID`, `LOCATION`, `TIME`, `DATE`, `STUDENT_ID`, `TUTOR_ID`, `SUBJECT_ID`) VALUES
+(1, 'The Taco Bell dumpster on Northgate', '07:30:00.000000', '2022-11-04', 1, 1, 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `availability`
+-- Table structure for table `CLASS`
 --
 
-CREATE TABLE `availability` (
-  `AVAILABILITY_ID` int(11) NOT NULL,
-  `DAY` varchar(15) DEFAULT NULL,
-  `TUTOR_ID` int(11) DEFAULT NULL,
-  `START_TIME` time DEFAULT NULL,
-  `END_TIME` time DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `class`
---
-
-CREATE TABLE `class` (
+CREATE TABLE `CLASS` (
   `CLASS_ID` int(50) NOT NULL,
   `CLASS_CODE` varchar(50) NOT NULL,
   `CLASS_NUMBER` int(50) NOT NULL,
@@ -71,50 +58,38 @@ CREATE TABLE `class` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `class`
+-- Dumping data for table `CLASS`
 --
 
-INSERT INTO `class` (`CLASS_ID`, `CLASS_CODE`, `CLASS_NUMBER`, `NAME`) VALUES
+INSERT INTO `CLASS` (`CLASS_ID`, `CLASS_CODE`, `CLASS_NUMBER`, `NAME`) VALUES
 (1, 'CSCE', 310, 'Database Systems');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `class_bridge`
+-- Table structure for table `CLASS_BRIDGE`
 --
 
-CREATE TABLE `class_bridge` (
+CREATE TABLE `CLASS_BRIDGE` (
   `CLASSES_BRIDGE_ID` int(50) NOT NULL,
   `TUTOR_ID` int(50) NOT NULL,
   `CLASS_ID` int(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `class_bridge`
+-- Dumping data for table `CLASS_BRIDGE`
 --
 
-INSERT INTO `class_bridge` (`CLASSES_BRIDGE_ID`, `TUTOR_ID`, `CLASS_ID`) VALUES
-(1, 2, 1);
+INSERT INTO `CLASS_BRIDGE` (`CLASSES_BRIDGE_ID`, `TUTOR_ID`, `CLASS_ID`) VALUES
+(1, 1, 1);
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `five star tutors`
--- (See below for the actual view)
---
-CREATE TABLE `five star tutors` (
-`F_NAME` varchar(50)
-,`L_NAME` varchar(50)
-,`AVG_RATING` float
-);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `review`
+-- Table structure for table `REVIEW`
 --
 
-CREATE TABLE `review` (
+CREATE TABLE `REVIEW` (
   `REVIEW_ID` int(11) NOT NULL,
   `COMMENT` varchar(100) NOT NULL,
   `STARS` int(1) NOT NULL,
@@ -124,75 +99,78 @@ CREATE TABLE `review` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `review`
+-- Dumping data for table `REVIEW`
 --
 
-INSERT INTO `review` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`, `DATE`) VALUES
-(1, 'Travis did the job. Mid af.', 5, 2, 1, '2022-11-01');
+INSERT INTO `REVIEW` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`, `DATE`) VALUES
+(1, 'Travis did the job. Mid af.', 5, 1, 1, '2022-11-01'),
+(123, 'Terrible', 0, 1, 123, '2022-11-11');
+
+--
+-- Triggers `REVIEW`
+--
+DELIMITER $$
+CREATE TRIGGER `update_rating` AFTER INSERT ON `REVIEW` FOR EACH ROW UPDATE TUTOR
+SET AVG_RATING = 
+(SELECT AVG(STARS)
+FROM REVIEW
+WHERE TUTOR_ID = NEW.tutor_id)
+WHERE USER_ID = new.tutor_id
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `student`
+-- Table structure for table `STUDENT`
 --
 
-CREATE TABLE `student` (
+CREATE TABLE `STUDENT` (
   `USER_ID` int(50) NOT NULL,
   `GPA` float NOT NULL,
   `CLASS_YEAR` int(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `student`
+-- Dumping data for table `STUDENT`
 --
 
-INSERT INTO `student` (`USER_ID`, `GPA`, `CLASS_YEAR`) VALUES
-(1, 4, 1);
+INSERT INTO `STUDENT` (`USER_ID`, `GPA`, `CLASS_YEAR`) VALUES
+(1, 0, 0),
+(2, 4, 1),
+(123, 0, 1876),
+(123456, 0, 1876);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `subject`
+-- Table structure for table `SUBJECT`
 --
 
-CREATE TABLE `subject` (
+CREATE TABLE `SUBJECT` (
   `SUBJECT_ID` int(50) NOT NULL,
   `NAME` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `subject`
---
-
-INSERT INTO `subject` (`SUBJECT_ID`, `NAME`) VALUES
-(1, 'Statistics');
-
 -- --------------------------------------------------------
 
 --
--- Table structure for table `subject_bridge`
+-- Table structure for table `SUBJECT_BRIDGE`
 --
 
-CREATE TABLE `subject_bridge` (
+CREATE TABLE `SUBJECT_BRIDGE` (
   `SUBJECT_BRIDGE_ID` int(50) NOT NULL,
   `USER_ID` int(50) NOT NULL,
   `SUBJECT_ID` int(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `subject_bridge`
---
-
-INSERT INTO `subject_bridge` (`SUBJECT_BRIDGE_ID`, `USER_ID`, `SUBJECT_ID`) VALUES
-(1, 2, 1);
-
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tag`
+-- Table structure for table `TAG`
 --
 
-CREATE TABLE `tag` (
+CREATE TABLE `TAG` (
   `TAG_ID` int(50) NOT NULL,
   `NAME` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -200,10 +178,10 @@ CREATE TABLE `tag` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tag_bridge`
+-- Table structure for table `TAG_BRIDGE`
 --
 
-CREATE TABLE `tag_bridge` (
+CREATE TABLE `TAG_BRIDGE` (
   `TAG_BRIDGE_ID` int(50) NOT NULL,
   `REVIEW_ID` int(50) NOT NULL,
   `TAG_ID` int(50) NOT NULL
@@ -212,28 +190,29 @@ CREATE TABLE `tag_bridge` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tutor`
+-- Table structure for table `TUTOR`
 --
 
-CREATE TABLE `tutor` (
+CREATE TABLE `TUTOR` (
   `USER_ID` int(50) NOT NULL,
   `AVG_RATING` float NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `tutor`
+-- Dumping data for table `TUTOR`
 --
 
-INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
-(2, 4.99);
+INSERT INTO `TUTOR` (`USER_ID`, `AVG_RATING`) VALUES
+(1, 2.5),
+(123, 0);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user`
+-- Table structure for table `USER`
 --
 
-CREATE TABLE `user` (
+CREATE TABLE `USER` (
   `USER_ID` int(50) NOT NULL,
   `USERNAME` varchar(50) NOT NULL,
   `PASSWORD` varchar(50) NOT NULL,
@@ -247,109 +226,107 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `user`
+-- Dumping data for table `USER`
 --
 
-INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHONE`, `EMAIL`, `IS_STUDENT`, `IS_TUTOR`, `IS_ADMIN`) VALUES
+INSERT INTO `USER` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHONE`, `EMAIL`, `IS_STUDENT`, `IS_TUTOR`, `IS_ADMIN`) VALUES
 (1, 'landonjpalmer', 'password', 'Landon', 'Palmer', '911-555-5555', 'landonjpalmer@tamu.edu', 1, 0, 0),
-(2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0);
-
--- --------------------------------------------------------
+(100, 'a', 'b', 'Chuck', 'd', 'e', 'f', 0, 0, 0),
+(123, 'user', 'pass', 'f', 'l', '12345', 'email', 1, 1, 0),
+(500, 'usernmae', 'pass', 'Bill', 'lname', '123', 'email@amam', 0, 0, 0),
+(123456, 'WS', 'password', 'Bill', 'Smith', '123456789', 'email', 1, 0, 0);
 
 --
--- Structure for view `five star tutors`
+-- Triggers `USER`
 --
-DROP TABLE IF EXISTS `five star tutors`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5)  ;
+DELIMITER $$
+CREATE TRIGGER `user_type` BEFORE INSERT ON `USER` FOR EACH ROW BEGIN
+        IF NEW.is_student = 1 THEN
+    		INSERT INTO STUDENT (USER_ID, GPA, CLASS_YEAR)
+            VALUES (new.user_id, 0, 1876);
+    	END IF; 
+        IF NEW.is_tutor = 1 THEN
+			INSERT INTO tutor(USER_ID, AVG_RATING)
+			VALUES(NEW.user_id, 0);
+		END IF;
+END
+$$
+DELIMITER ;
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `appointment`
+-- Indexes for table `APPOINTMENT`
 --
-ALTER TABLE `appointment`
+ALTER TABLE `APPOINTMENT`
   ADD PRIMARY KEY (`APPOINTMENT_ID`),
-  ADD KEY `fk_student_id1` (`STUDENT_ID`) USING BTREE,
-  ADD KEY `fk_subject_id1` (`SUBJECT_ID`) USING BTREE,
-  ADD KEY `fk_tutor_id1` (`TUTOR_ID`) USING BTREE,
-  ADD KEY `fk_availability_id1` (`AVAILABILITY_ID`);
+  ADD KEY `student_FK` (`STUDENT_ID`);
 
 --
--- Indexes for table `availability`
+-- Indexes for table `CLASS`
 --
-ALTER TABLE `availability`
-  ADD PRIMARY KEY (`AVAILABILITY_ID`),
-  ADD KEY `fk_tutor_id5` (`TUTOR_ID`);
-
---
--- Indexes for table `class`
---
-ALTER TABLE `class`
+ALTER TABLE `CLASS`
   ADD PRIMARY KEY (`CLASS_ID`);
 
 --
--- Indexes for table `class_bridge`
+-- Indexes for table `CLASS_BRIDGE`
 --
-ALTER TABLE `class_bridge`
+ALTER TABLE `CLASS_BRIDGE`
   ADD PRIMARY KEY (`CLASSES_BRIDGE_ID`),
-  ADD KEY `fk_tutor_id2` (`TUTOR_ID`),
-  ADD KEY `fk_class_id1` (`CLASS_ID`);
+  ADD KEY `tutor_FK` (`TUTOR_ID`),
+  ADD KEY `class_FK` (`CLASS_ID`);
 
 --
--- Indexes for table `review`
+-- Indexes for table `REVIEW`
 --
-ALTER TABLE `review`
+ALTER TABLE `REVIEW`
   ADD PRIMARY KEY (`REVIEW_ID`),
-  ADD KEY `fk_tutor_id3` (`TUTOR_ID`),
-  ADD KEY `fk_student_id3` (`STUDENT_ID`);
+  ADD KEY `student_FK` (`STUDENT_ID`),
+  ADD KEY `tutor_FK` (`TUTOR_ID`);
 
 --
--- Indexes for table `student`
+-- Indexes for table `STUDENT`
 --
-ALTER TABLE `student`
-  ADD PRIMARY KEY (`USER_ID`);
+ALTER TABLE `STUDENT`
+  ADD PRIMARY KEY (`USER_ID`),
+  ADD KEY `USER_ID` (`USER_ID`);
 
 --
--- Indexes for table `subject`
+-- Indexes for table `SUBJECT`
 --
-ALTER TABLE `subject`
+ALTER TABLE `SUBJECT`
   ADD PRIMARY KEY (`SUBJECT_ID`);
 
 --
--- Indexes for table `subject_bridge`
+-- Indexes for table `SUBJECT_BRIDGE`
 --
-ALTER TABLE `subject_bridge`
-  ADD PRIMARY KEY (`SUBJECT_BRIDGE_ID`),
-  ADD KEY `fk_user_id1` (`USER_ID`),
-  ADD KEY `fk_subject_id2` (`SUBJECT_ID`);
+ALTER TABLE `SUBJECT_BRIDGE`
+  ADD PRIMARY KEY (`SUBJECT_BRIDGE_ID`);
 
 --
--- Indexes for table `tag`
+-- Indexes for table `TAG`
 --
-ALTER TABLE `tag`
+ALTER TABLE `TAG`
   ADD PRIMARY KEY (`TAG_ID`);
 
 --
--- Indexes for table `tag_bridge`
+-- Indexes for table `TAG_BRIDGE`
 --
-ALTER TABLE `tag_bridge`
-  ADD PRIMARY KEY (`TAG_BRIDGE_ID`),
-  ADD KEY `fk_review_id2` (`REVIEW_ID`),
-  ADD KEY `fk_tag_id1` (`TAG_ID`);
+ALTER TABLE `TAG_BRIDGE`
+  ADD PRIMARY KEY (`TAG_BRIDGE_ID`);
 
 --
--- Indexes for table `tutor`
+-- Indexes for table `TUTOR`
 --
-ALTER TABLE `tutor`
+ALTER TABLE `TUTOR`
   ADD PRIMARY KEY (`USER_ID`);
 
 --
--- Indexes for table `user`
+-- Indexes for table `USER`
 --
-ALTER TABLE `user`
+ALTER TABLE `USER`
   ADD PRIMARY KEY (`USER_ID`);
 
 --
@@ -357,47 +334,24 @@ ALTER TABLE `user`
 --
 
 --
--- Constraints for table `appointment`
+-- Constraints for table `APPOINTMENT`
 --
-ALTER TABLE `appointment`
-  ADD CONSTRAINT `fk_availability_id1` FOREIGN KEY (`AVAILABILITY_ID`) REFERENCES `availability` (`AVAILABILITY_ID`),
-  ADD CONSTRAINT `fk_student_id` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
-  ADD CONSTRAINT `fk_subject_id` FOREIGN KEY (`SUBJECT_ID`) REFERENCES `subject` (`SUBJECT_ID`),
-  ADD CONSTRAINT `fk_tutor_id` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+ALTER TABLE `APPOINTMENT`
+  ADD CONSTRAINT `student_FK1` FOREIGN KEY (`STUDENT_ID`) REFERENCES `STUDENT` (`USER_ID`);
 
 --
--- Constraints for table `availability`
+-- Constraints for table `CLASS_BRIDGE`
 --
-ALTER TABLE `availability`
-  ADD CONSTRAINT `fk_tutor_id5` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
+ALTER TABLE `CLASS_BRIDGE`
+  ADD CONSTRAINT `class_bridge_FK` FOREIGN KEY (`CLASS_ID`) REFERENCES `CLASS` (`CLASS_ID`),
+  ADD CONSTRAINT `tutor_bridge_FK` FOREIGN KEY (`TUTOR_ID`) REFERENCES `TUTOR` (`USER_ID`);
 
 --
--- Constraints for table `class_bridge`
+-- Constraints for table `REVIEW`
 --
-ALTER TABLE `class_bridge`
-  ADD CONSTRAINT `fk_class_id1` FOREIGN KEY (`CLASS_ID`) REFERENCES `class` (`CLASS_ID`),
-  ADD CONSTRAINT `fk_tutor_id2` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
-
---
--- Constraints for table `review`
---
-ALTER TABLE `review`
-  ADD CONSTRAINT `fk_student_id3` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
-  ADD CONSTRAINT `fk_tutor_id3` FOREIGN KEY (`TUTOR_ID`) REFERENCES `tutor` (`USER_ID`);
-
---
--- Constraints for table `subject_bridge`
---
-ALTER TABLE `subject_bridge`
-  ADD CONSTRAINT `fk_subject_id2` FOREIGN KEY (`SUBJECT_ID`) REFERENCES `subject` (`SUBJECT_ID`),
-  ADD CONSTRAINT `fk_user_id1` FOREIGN KEY (`USER_ID`) REFERENCES `user` (`USER_ID`);
-
---
--- Constraints for table `tag_bridge`
---
-ALTER TABLE `tag_bridge`
-  ADD CONSTRAINT `fk_review_id2` FOREIGN KEY (`REVIEW_ID`) REFERENCES `review` (`REVIEW_ID`),
-  ADD CONSTRAINT `fk_tag_id1` FOREIGN KEY (`TAG_ID`) REFERENCES `tag` (`TAG_ID`);
+ALTER TABLE `REVIEW`
+  ADD CONSTRAINT `student_FK` FOREIGN KEY (`STUDENT_ID`) REFERENCES `student` (`USER_ID`),
+  ADD CONSTRAINT `tutor_FK` FOREIGN KEY (`TUTOR_ID`) REFERENCES `TUTOR` (`USER_ID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
