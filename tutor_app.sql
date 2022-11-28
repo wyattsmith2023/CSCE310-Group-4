@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.2
+-- version 5.1.0
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Nov 11, 2022 at 11:24 PM
--- Server version: 5.7.24
--- PHP Version: 8.0.1
+-- Host: localhost:8889
+-- Generation Time: Nov 28, 2022 at 10:14 PM
+-- Server version: 5.7.34
+-- PHP Version: 7.4.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -128,7 +128,21 @@ CREATE TABLE `review` (
 --
 
 INSERT INTO `review` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`, `DATE`) VALUES
-(1, 'Travis did the job. Mid af.', 5, 2, 1, '2022-11-01');
+(1, 'Travis did the job. Mid af.', 5, 2, 1, '2022-11-01'),
+(2, 'REVIEW bad', 1, 2, 1, '2022-11-09');
+
+--
+-- Triggers `review`
+--
+DELIMITER $$
+CREATE TRIGGER `update_rating` AFTER INSERT ON `review` FOR EACH ROW UPDATE TUTOR
+SET AVG_RATING = 
+(SELECT AVG(STARS)
+FROM review
+WHERE TUTOR_ID = new.tutor_id)
+WHERE USER_ID = new.tutor_id
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -147,7 +161,8 @@ CREATE TABLE `student` (
 --
 
 INSERT INTO `student` (`USER_ID`, `GPA`, `CLASS_YEAR`) VALUES
-(1, 4, 1);
+(1, 4, 1),
+(100, 0, 1876);
 
 -- --------------------------------------------------------
 
@@ -225,7 +240,8 @@ CREATE TABLE `tutor` (
 --
 
 INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
-(2, 4.99);
+(2, 3),
+(100, 0);
 
 -- --------------------------------------------------------
 
@@ -252,7 +268,25 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHONE`, `EMAIL`, `IS_STUDENT`, `IS_TUTOR`, `IS_ADMIN`) VALUES
 (1, 'landonjpalmer', 'password', 'Landon', 'Palmer', '911-555-5555', 'landonjpalmer@tamu.edu', 1, 0, 0),
-(2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0);
+(2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0),
+(100, 'usernamebitch', 'passwordhoney', 'Wyatt', 'Smith', '12345', 'email@amam', 1, 1, 1);
+
+--
+-- Triggers `user`
+--
+DELIMITER $$
+CREATE TRIGGER `user_type` BEFORE INSERT ON `user` FOR EACH ROW BEGIN
+        IF new.is_student = 1 THEN
+    		INSERT INTO student (USER_ID, GPA, CLASS_YEAR)
+            VALUES (new.user_id, 0, 1876);
+    	END IF; 
+        IF new.is_tutor = 1 THEN
+			INSERT INTO tutor(USER_ID, AVG_RATING)
+			VALUES(new.user_id, 0);
+		END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -261,7 +295,7 @@ INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHON
 --
 DROP TABLE IF EXISTS `five star tutors`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5)  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5) ;
 
 --
 -- Indexes for dumped tables
