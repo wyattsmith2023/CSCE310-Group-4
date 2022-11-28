@@ -341,6 +341,14 @@ DROP TABLE IF EXISTS `tutor_availability`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`) ;
 
 --
+-- Structure for view `tutoring_subjects`
+--
+DROP TABLE IF EXISTS `tutoring_subjects`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutoring_subjects`  AS SELECT `user`.`USERNAME` AS `Tutor_Username`, `subject`.`NAME` AS `Subject` FROM ((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`USER_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`))) ;
+
+
+--
 -- Indexes for dumped tables
 --
 
@@ -427,7 +435,6 @@ ALTER TABLE `tutor`
 -- Indexes for table `tutor`
 --
 ALTER TABLE `tutor`
-  ADD PRIMARY KEY (`USER_ID`),
   ADD KEY `tutors_by_rating` (`USER_ID`,`AVG_RATING`);
 
 --
