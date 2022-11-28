@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Nov 28, 2022 at 10:38 PM
+-- Generation Time: Nov 28, 2022 at 11:04 PM
 -- Server version: 5.7.34
 -- PHP Version: 7.4.21
 
@@ -416,7 +416,8 @@ ALTER TABLE `tutor`
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`USER_ID`);
+  ADD PRIMARY KEY (`USER_ID`),
+  ADD KEY `user_phonenumbers` (`USERNAME`,`PHONE`);
 
 --
 -- Constraints for dumped tables
