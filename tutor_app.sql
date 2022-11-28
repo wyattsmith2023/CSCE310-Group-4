@@ -269,6 +269,17 @@ CREATE TABLE `tutor_availability` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `tutoring_subjects`
+-- (See below for the actual view)
+--
+CREATE TABLE `tutoring_subjects` (
+`Tutor_Username` varchar(50)
+,`Subject` varchar(50)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user`
 --
 
@@ -411,6 +422,13 @@ ALTER TABLE `tag_bridge`
 --
 ALTER TABLE `tutor`
   ADD PRIMARY KEY (`USER_ID`);
+
+--
+-- Indexes for table `tutor`
+--
+ALTER TABLE `tutor`
+  ADD PRIMARY KEY (`USER_ID`),
+  ADD KEY `tutors_by_rating` (`USER_ID`,`AVG_RATING`);
 
 --
 -- Indexes for table `user`
