@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Nov 28, 2022 at 10:14 PM
+-- Generation Time: Nov 28, 2022 at 10:38 PM
 -- Server version: 5.7.34
 -- PHP Version: 7.4.21
 
@@ -56,6 +56,16 @@ CREATE TABLE `availability` (
   `START_TIME` time DEFAULT NULL,
   `END_TIME` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `availability`
+--
+
+INSERT INTO `availability` (`AVAILABILITY_ID`, `DAY`, `TUTOR_ID`, `START_TIME`, `END_TIME`) VALUES
+(1, 'Tuesday', 2, '06:45:00', '07:45:00'),
+(2, 'Wednesday', 100, '07:00:00', '08:00:00'),
+(3, 'Saturday', 2, '05:00:00', '09:00:00'),
+(4, 'Saturday', 100, '06:00:00', '07:00:00');
 
 -- --------------------------------------------------------
 
@@ -246,6 +256,19 @@ INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `tutor_availability`
+-- (See below for the actual view)
+--
+CREATE TABLE `tutor_availability` (
+`USERNAME` varchar(50)
+,`DAY` varchar(15)
+,`START_TIME` time
+,`END_TIME` time
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user`
 --
 
@@ -296,6 +319,15 @@ DELIMITER ;
 DROP TABLE IF EXISTS `five star tutors`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `tutor_availability`
+--
+DROP TABLE IF EXISTS `tutor_availability`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`) ;
 
 --
 -- Indexes for dumped tables
