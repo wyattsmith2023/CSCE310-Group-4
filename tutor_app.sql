@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.2
+-- version 5.1.0
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Nov 11, 2022 at 11:48 PM
--- Server version: 5.7.24
--- PHP Version: 8.0.1
+-- Host: localhost:8889
+-- Generation Time: Nov 28, 2022 at 11:04 PM
+-- Server version: 5.7.34
+-- PHP Version: 7.4.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -56,6 +56,16 @@ CREATE TABLE `availability` (
   `START_TIME` time DEFAULT NULL,
   `END_TIME` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `availability`
+--
+
+INSERT INTO `availability` (`AVAILABILITY_ID`, `DAY`, `TUTOR_ID`, `START_TIME`, `END_TIME`) VALUES
+(1, 'Tuesday', 2, '06:45:00', '07:45:00'),
+(2, 'Wednesday', 100, '07:00:00', '08:00:00'),
+(3, 'Saturday', 2, '05:00:00', '09:00:00'),
+(4, 'Saturday', 100, '06:00:00', '07:00:00');
 
 -- --------------------------------------------------------
 
@@ -128,7 +138,21 @@ CREATE TABLE `review` (
 --
 
 INSERT INTO `review` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`, `DATE`) VALUES
-(1, 'Travis did the job. Mid af.', 5, 2, 1, '2022-11-01');
+(1, 'Travis did the job. Mid af.', 5, 2, 1, '2022-11-01'),
+(2, 'REVIEW bad', 1, 2, 1, '2022-11-09');
+
+--
+-- Triggers `review`
+--
+DELIMITER $$
+CREATE TRIGGER `update_rating` AFTER INSERT ON `review` FOR EACH ROW UPDATE TUTOR
+SET AVG_RATING = 
+(SELECT AVG(STARS)
+FROM review
+WHERE TUTOR_ID = new.tutor_id)
+WHERE USER_ID = new.tutor_id
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -147,7 +171,8 @@ CREATE TABLE `student` (
 --
 
 INSERT INTO `student` (`USER_ID`, `GPA`, `CLASS_YEAR`) VALUES
-(1, 4, 1);
+(1, 4, 1),
+(100, 0, 1876);
 
 -- --------------------------------------------------------
 
@@ -225,7 +250,32 @@ CREATE TABLE `tutor` (
 --
 
 INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
-(2, 4.99);
+(2, 3),
+(100, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `tutor_availability`
+-- (See below for the actual view)
+--
+CREATE TABLE `tutor_availability` (
+`USERNAME` varchar(50)
+,`DAY` varchar(15)
+,`START_TIME` time
+,`END_TIME` time
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `tutoring_subjects`
+-- (See below for the actual view)
+--
+CREATE TABLE `tutoring_subjects` (
+`Tutor_Username` varchar(50)
+,`Subject` varchar(50)
+);
 
 -- --------------------------------------------------------
 
@@ -252,7 +302,25 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHONE`, `EMAIL`, `IS_STUDENT`, `IS_TUTOR`, `IS_ADMIN`) VALUES
 (1, 'landonjpalmer', 'password', 'Landon', 'Palmer', '911-555-5555', 'landonjpalmer@tamu.edu', 1, 0, 0),
-(2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0);
+(2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0),
+(100, 'usernamebitch', 'passwordhoney', 'Wyatt', 'Smith', '12345', 'email@amam', 1, 1, 1);
+
+--
+-- Triggers `user`
+--
+DELIMITER $$
+CREATE TRIGGER `user_type` BEFORE INSERT ON `user` FOR EACH ROW BEGIN
+        IF new.is_student = 1 THEN
+    		INSERT INTO student (USER_ID, GPA, CLASS_YEAR)
+            VALUES (new.user_id, 0, 1876);
+    	END IF; 
+        IF new.is_tutor = 1 THEN
+			INSERT INTO tutor(USER_ID, AVG_RATING)
+			VALUES(new.user_id, 0);
+		END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -261,7 +329,24 @@ INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHON
 --
 DROP TABLE IF EXISTS `five star tutors`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5)  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `tutor_availability`
+--
+DROP TABLE IF EXISTS `tutor_availability`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`) ;
+
+--
+-- Structure for view `tutoring_subjects`
+--
+DROP TABLE IF EXISTS `tutoring_subjects`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutoring_subjects`  AS SELECT `user`.`USERNAME` AS `Tutor_Username`, `subject`.`NAME` AS `Subject` FROM ((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`USER_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`))) ;
+
 
 --
 -- Indexes for dumped tables
@@ -347,10 +432,17 @@ ALTER TABLE `tutor`
   ADD PRIMARY KEY (`USER_ID`);
 
 --
+-- Indexes for table `tutor`
+--
+ALTER TABLE `tutor`
+  ADD KEY `tutors_by_rating` (`USER_ID`,`AVG_RATING`);
+
+--
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`USER_ID`);
+  ADD PRIMARY KEY (`USER_ID`),
+  ADD KEY `user_phonenumbers` (`USERNAME`,`PHONE`);
 
 --
 -- Constraints for dumped tables
