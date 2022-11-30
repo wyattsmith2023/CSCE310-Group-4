@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.0
+-- version 5.1.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:8889
--- Generation Time: Nov 28, 2022 at 11:04 PM
--- Server version: 5.7.34
--- PHP Version: 7.4.21
+-- Host: localhost:3306
+-- Generation Time: Nov 30, 2022 at 08:00 PM
+-- Server version: 5.7.24
+-- PHP Version: 8.0.1
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,21 @@ SET time_zone = "+00:00";
 --
 -- Database: `tutor_app`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `all_reviews`
+-- (See below for the actual view)
+--
+CREATE TABLE `all_reviews` (
+`TUTOR` varchar(50)
+,`NAME` varchar(101)
+,`COMMENT` varchar(100)
+,`STARS` int(1)
+,`TAGS` text
+,`DATE` date
+);
 
 -- --------------------------------------------------------
 
@@ -41,7 +56,7 @@ CREATE TABLE `appointment` (
 --
 
 INSERT INTO `appointment` (`APPOINTMENT_ID`, `STUDENT_ID`, `TUTOR_ID`, `SUBJECT_ID`, `AVAILABILITY_ID`, `LOCATION`) VALUES
-(1, 1, 2, 1, NULL, NULL);
+(1, 1, 2, 1, 2, 'Evans Library');
 
 -- --------------------------------------------------------
 
@@ -109,10 +124,10 @@ INSERT INTO `class_bridge` (`CLASSES_BRIDGE_ID`, `TUTOR_ID`, `CLASS_ID`) VALUES
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `five star tutors`
+-- Stand-in structure for view `five_star_tutors`
 -- (See below for the actual view)
 --
-CREATE TABLE `five star tutors` (
+CREATE TABLE `five_star_tutors` (
 `F_NAME` varchar(50)
 ,`L_NAME` varchar(50)
 ,`AVG_RATING` float
@@ -138,12 +153,34 @@ CREATE TABLE `review` (
 --
 
 INSERT INTO `review` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`, `DATE`) VALUES
-(1, 'Travis did the job. Mid af.', 5, 2, 1, '2022-11-01'),
-(2, 'REVIEW bad', 1, 2, 1, '2022-11-09');
+(1, 'Tom did the job. Mid af.', 5, 2, 1, '2022-11-01'),
+(2, 'REVIEW bad', 1, 2, 1, '2022-11-09'),
+(3, 'Yo, this guy really stinks, I wish I hadn\'t given this guy $100', 1, 2, 101, '2022-11-30'),
+(4, 'Oh brother this guy stinks', 2, 2, 101, '2022-11-30'),
+(5, 'Oh, nvm, this guys goated', 5, 2, 101, '2022-11-30');
 
 --
 -- Triggers `review`
 --
+DELIMITER $$
+CREATE TRIGGER `add_basic_tag` AFTER INSERT ON `review` FOR EACH ROW BEGIN
+	IF new.STARS > 3 THEN
+        INSERT INTO `tag_bridge`(
+            `REVIEW_ID`,
+            `TAG_ID`
+        )
+        VALUES(new.REVIEW_ID, 111);
+    END IF;
+    IF new.STARS < 3 THEN
+        INSERT INTO `tag_bridge`(
+            `REVIEW_ID`,
+            `TAG_ID`
+        )
+        VALUES(new.REVIEW_ID, 112);
+    END IF;
+END
+$$
+DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `update_rating` AFTER INSERT ON `review` FOR EACH ROW UPDATE TUTOR
 SET AVG_RATING = 
@@ -172,7 +209,8 @@ CREATE TABLE `student` (
 
 INSERT INTO `student` (`USER_ID`, `GPA`, `CLASS_YEAR`) VALUES
 (1, 4, 1),
-(100, 0, 1876);
+(100, 0, 1876),
+(101, 0, 1876);
 
 -- --------------------------------------------------------
 
@@ -222,6 +260,28 @@ CREATE TABLE `tag` (
   `NAME` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `tag`
+--
+
+INSERT INTO `tag` (`TAG_ID`, `NAME`) VALUES
+(100, 'Great'),
+(101, 'Visual Teacher'),
+(102, 'Auditory Teacher'),
+(103, 'Poor Listener'),
+(104, 'Great Listener'),
+(105, 'Patient'),
+(106, 'Poor Communicator'),
+(107, 'Stubborn'),
+(108, 'Rude'),
+(109, 'Not Very Helpful'),
+(110, 'Very Helpful'),
+(111, 'Would Recommend'),
+(112, 'Would Not Recommend'),
+(113, 'Terrible'),
+(114, 'Amazing'),
+(115, 'Caring');
+
 -- --------------------------------------------------------
 
 --
@@ -233,6 +293,18 @@ CREATE TABLE `tag_bridge` (
   `REVIEW_ID` int(50) NOT NULL,
   `TAG_ID` int(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `tag_bridge`
+--
+
+INSERT INTO `tag_bridge` (`TAG_BRIDGE_ID`, `REVIEW_ID`, `TAG_ID`) VALUES
+(1, 1, 111),
+(2, 1, 101),
+(3, 2, 109),
+(4, 3, 112),
+(5, 4, 112),
+(6, 5, 111);
 
 -- --------------------------------------------------------
 
@@ -250,8 +322,19 @@ CREATE TABLE `tutor` (
 --
 
 INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
-(2, 3),
+(2, 2.8),
 (100, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `tutoring_subjects`
+-- (See below for the actual view)
+--
+CREATE TABLE `tutoring_subjects` (
+`Tutor_Username` varchar(50)
+,`Subject` varchar(50)
+);
 
 -- --------------------------------------------------------
 
@@ -264,17 +347,6 @@ CREATE TABLE `tutor_availability` (
 ,`DAY` varchar(15)
 ,`START_TIME` time
 ,`END_TIME` time
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `tutoring_subjects`
--- (See below for the actual view)
---
-CREATE TABLE `tutoring_subjects` (
-`Tutor_Username` varchar(50)
-,`Subject` varchar(50)
 );
 
 -- --------------------------------------------------------
@@ -303,13 +375,14 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHONE`, `EMAIL`, `IS_STUDENT`, `IS_TUTOR`, `IS_ADMIN`) VALUES
 (1, 'landonjpalmer', 'password', 'Landon', 'Palmer', '911-555-5555', 'landonjpalmer@tamu.edu', 1, 0, 0),
 (2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0),
-(100, 'usernamebitch', 'passwordhoney', 'Wyatt', 'Smith', '12345', 'email@amam', 1, 1, 1);
+(100, 'usernamebitch', 'passwordhoney', 'Wyatt', 'Smith', '12345', 'email@amam', 1, 1, 1),
+(101, 'TechsMex', 'password', 'Jorge', 'Vargas', '915-555-5555', 'myemail@tamu.edu', 1, 0, 0);
 
 --
 -- Triggers `user`
 --
 DELIMITER $$
-CREATE TRIGGER `user_type` BEFORE INSERT ON `user` FOR EACH ROW BEGIN
+CREATE TRIGGER `user_type` AFTER INSERT ON `user` FOR EACH ROW BEGIN
         IF new.is_student = 1 THEN
     		INSERT INTO student (USER_ID, GPA, CLASS_YEAR)
             VALUES (new.user_id, 0, 1876);
@@ -325,11 +398,29 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Structure for view `five star tutors`
+-- Structure for view `all_reviews`
 --
-DROP TABLE IF EXISTS `five star tutors`;
+DROP TABLE IF EXISTS `all_reviews`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five star tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `all_reviews`  AS SELECT `user`.`USERNAME` AS `TUTOR`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `NAME`, `review`.`COMMENT` AS `COMMENT`, `review`.`STARS` AS `STARS`, group_concat(distinct `tag`.`NAME` separator ', ') AS `TAGS`, `review`.`DATE` AS `DATE` FROM (((`review` join `tag_bridge` on((`review`.`REVIEW_ID` = `tag_bridge`.`REVIEW_ID`))) join `tag` on((`tag_bridge`.`TAG_ID` = `tag`.`TAG_ID`))) join `user` on((`review`.`TUTOR_ID` = `user`.`USER_ID`))) GROUP BY `review`.`TUTOR_ID`, `review`.`COMMENT`, `review`.`STARS`, `review`.`DATE` ORDER BY `review`.`DATE` ASC  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `five_star_tutors`
+--
+DROP TABLE IF EXISTS `five_star_tutors`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five_star_tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5)  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `tutoring_subjects`
+--
+DROP TABLE IF EXISTS `tutoring_subjects`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutoring_subjects`  AS SELECT `user`.`USERNAME` AS `Tutor_Username`, `subject`.`NAME` AS `Subject` FROM ((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`USER_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`)))  ;
 
 -- --------------------------------------------------------
 
@@ -338,15 +429,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `tutor_availability`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`) ;
-
---
--- Structure for view `tutoring_subjects`
---
-DROP TABLE IF EXISTS `tutoring_subjects`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutoring_subjects`  AS SELECT `user`.`USERNAME` AS `Tutor_Username`, `subject`.`NAME` AS `Subject` FROM ((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`USER_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`))) ;
-
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`)  ;
 
 --
 -- Indexes for dumped tables
@@ -395,7 +478,8 @@ ALTER TABLE `review`
 -- Indexes for table `student`
 --
 ALTER TABLE `student`
-  ADD PRIMARY KEY (`USER_ID`);
+  ADD PRIMARY KEY (`USER_ID`),
+  ADD KEY `CLASS_YEAR` (`CLASS_YEAR`);
 
 --
 -- Indexes for table `subject`
@@ -429,12 +513,7 @@ ALTER TABLE `tag_bridge`
 -- Indexes for table `tutor`
 --
 ALTER TABLE `tutor`
-  ADD PRIMARY KEY (`USER_ID`);
-
---
--- Indexes for table `tutor`
---
-ALTER TABLE `tutor`
+  ADD PRIMARY KEY (`USER_ID`),
   ADD KEY `tutors_by_rating` (`USER_ID`,`AVG_RATING`);
 
 --
@@ -443,6 +522,16 @@ ALTER TABLE `tutor`
 ALTER TABLE `user`
   ADD PRIMARY KEY (`USER_ID`),
   ADD KEY `user_phonenumbers` (`USERNAME`,`PHONE`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `tag_bridge`
+--
+ALTER TABLE `tag_bridge`
+  MODIFY `TAG_BRIDGE_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
