@@ -1,5 +1,8 @@
 <?php
     $user_id = $_GET['user_id'];
+    $student_url = 'http://localhost/student.php?user_id='.$user_id;
+    $tutor_url = 'http://localhost/tutor.php?user_id='.$user_id;
+    $admin_url = 'http://localhost/admin.php?user_id='.$user_id;
 
     $db_host = 'localhost';
     $db_user = 'root';
@@ -23,15 +26,21 @@
     if($arr[2]) { $hideAdminBtn = FALSE; $count++; }
 
     if($count == 1) {
-        if($arr[0]) echo 'I need to go to Student Page <br>';
-        elseif($arr[1]) echo 'I need to go to Tutor Page <br>';
-        else echo 'I need to go to Admin Page';
+        if($arr[0]) header("Location: $student_url");
+        elseif($arr[1]) header("Location: $tutor_url");
+        else header("Location: $admin_url");
     }
+
+    if(isset($_POST['studentBtn'])) header("Location: $student_url");
+    if(isset($_POST['tutorBtn'])) header("Location: $tutor_url");
+    if(isset($_POST['adminBtn'])) header("Location: $admin_url");
 ?>
 
 <!doctype html>
     <html>
-        <button id = 'studentButton' type="button" <?php if($hideStudentBtn) {?> hidden="" <?php } ?>>Go to your Student Page</button>
-        <button id = 'tutorButton' type="button" <?php if($hideTutorBtn) {?> hidden="" <?php } ?>>Go to your Tutor Page</button>
-        <button id = 'adminButton' type="button" <?php if($hideAdminBtn) {?> hidden="" <?php } ?>>Go to your Admin Page</button> 
+    <form method="post">
+    <button name='studentBtn' type="submit" <?php if($hideStudentBtn) {?> hidden="" <?php } ?>>Go to your Student Page</button>
+    <button name='tutorBtn' type="submit" <?php if($hideTutorBtn) {?> hidden="" <?php } ?>>Go to your Tutor Page</button>
+    <button name='adminBtn' type="submit" <?php if($hideAdminBtn) {?> hidden="" <?php } ?>>Go to your Admin Page</button> 
+    </form>
     </html>
