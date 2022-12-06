@@ -23,11 +23,8 @@
   }
   
   $appointment_sql = "SELECT appointment.STUDENT_ID, appointment.LOCATION, availability.DAY, availability.START_TIME, availability.END_TIME \n"
-
     . "FROM appointment \n"
-
-    . "JOIN availability ON appointment.APPOINTMENT_ID = availability.AVAILABILITY_ID \n"
-
+    . "JOIN availability ON appointment.AVAILABILITY_ID = availability.AVAILABILITY_ID \n"
     . "WHERE STUDENT_ID=$user_id\n";
 
   $appointments_list = $mysqli->query($appointment_sql);
