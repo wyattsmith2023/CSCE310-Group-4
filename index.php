@@ -29,7 +29,6 @@ if (isset($_GET['username'])){
     while($row = $result->fetch_assoc()) {
       if ($row["PASSWORD"] == $password){
         $user_id = $row["USER_ID"];
-        echo $user_id;
         header("Location: http://localhost:8888/select.php?user_id=$user_id");    
       }
       else {

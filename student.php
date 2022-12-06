@@ -1,4 +1,6 @@
 <?php
+  $user_id = $_GET['user_id'];
+
   $db_host = 'localhost';
   $db_user = 'root';
   $db_password = 'root';
@@ -20,10 +22,18 @@
     exit();
   }
   
-  $appointments_list = $mysqli->query(" SELECT appointment.STUDENT_ID, appointment.LOCATION, availability.DAY, availability.START_TIME, availability.END_TIME FROM appointment JOIN availability ON appointment.APPOINTMENT_ID = availability.AVAILABILITY_ID ORDER BY availability.DAY  ");
+  $appointment_sql = "SELECT appointment.STUDENT_ID, appointment.LOCATION, availability.DAY, availability.START_TIME, availability.END_TIME \n"
+
+    . "FROM appointment \n"
+
+    . "JOIN availability ON appointment.APPOINTMENT_ID = availability.AVAILABILITY_ID \n"
+
+    . "WHERE STUDENT_ID=$user_id\n";
+
+  $appointments_list = $mysqli->query($appointment_sql);
 
 
-  $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=1  ");
+  $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
 ?>
 
 
