@@ -1,6 +1,5 @@
 <?php
     $user_id = $_GET['user_id'];
-    $tutor_id = $_GET['tutor_id'];
 
     $db_host = 'localhost';
     $db_user = 'root';
@@ -8,9 +7,9 @@
     $db_db = 'tutor_app';
 
     $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
-    $tutor_info = ($conn->query("SELECT * FROM `user` WHERE `USER_ID`=$tutor_id"))->fetch_assoc();
-    $user_reviews = ($conn->query("SELECT * FROM `all_reviews` WHERE `STUDENT_ID`=$user_id AND `TUTOR_ID`=$tutor_id"));
+    $user_reviews = ($conn->query("SELECT * FROM `all_reviews` WHERE `STUDENT_ID`=$user_id"));
     $all_tags = $conn->query("SELECT * FROM `tag`");
+    $all_tutors = $conn->query("SELECT * FROM `user` WHERE IS_TUTOR = 1");
     $conn->close();
 
     function add_review($comment, $stars, $tutor_id, $student_id, $tags) {
@@ -62,6 +61,14 @@
 <h1>Reviews</h1>
 <p>
     <form action="" method="post">
+        <?php
+            echo "<label>Review Tutor</label>";
+            echo "<br>";
+            echo "<select name=\"tutor\" size=\"4\">";
+            foreach($all_tutors as $tutor)
+                echo "<option value=".$tutor['USER_ID'].">".$tutor['F_NAME']." ".$tutor['L_NAME']."</option>";
+            echo "</select>";
+        ?>
         <br><br>
         <p><label>Leave a comment below:</label></p>
         <textarea name="body" rows="4" cols="50"></textarea>
@@ -99,9 +106,10 @@
         if(isset($_POST['submitBtn'])) {
             $b_bool = isset($_POST['body']) && !empty($_POST['body']);
             $s_bool = isset($_POST['rate']) && !empty($_POST['rate']);
+            $t_bool = isset($_POST['tutor']) && !empty($_POST['tutor']);
         
-            if($b_bool && $s_bool) {
-                add_review($_POST['body'], $_POST['rate'], $tutor_id, $user_id, $_POST['tags']);
+            if($b_bool && $s_bool && $t_bool) {
+                add_review($_POST['body'], $_POST['rate'], $_POST['tutor'], $user_id, $_POST['tags']);
             }
         }
     ?>

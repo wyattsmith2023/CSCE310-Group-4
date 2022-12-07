@@ -24,6 +24,26 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `admin_appointments`
+-- (See below for the actual view)
+--
+CREATE TABLE `admin_appointments` (
+`APPOINTMENT_ID` int(50)
+,`STUDENT_ID` int(50)
+,`TUTOR_ID` int(50)
+,`SUBJECT_ID` int(50)
+,`AVAILABILITY_ID` int(11)
+,`LOCATION` varchar(50)
+,`DAY` varchar(15)
+,`START_TIME` time
+,`END_TIME` time
+,`TUTOR` varchar(101)
+,`STUDENT` varchar(101)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Stand-in structure for view `all_appointments`
 -- (See below for the actual view)
 --
@@ -513,6 +533,15 @@ CREATE TRIGGER `user_type` AFTER INSERT ON `user` FOR EACH ROW BEGIN
 END
 $$
 DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `admin_appointments`
+--
+DROP TABLE IF EXISTS `admin_appointments`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM (((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`)))  ;
 
 -- --------------------------------------------------------
 
