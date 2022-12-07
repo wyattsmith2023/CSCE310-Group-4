@@ -112,8 +112,6 @@
         echo "<th>Stars</th>";
         echo "<th>Tags</th>";
         echo "<th>Date</th>";
-        echo "<th></th>";
-        echo "<th></th>";
         echo "</tr>";
         
         foreach($user_reviews as $review) {
@@ -122,9 +120,12 @@
             echo "<td>".$review['STARS']."</td>";
             echo "<td>".$review['TAGS']."</td>";
             echo "<td>".$review['DATE']."</td>";
-            echo "<td><button>Edit Review</button></td>";
-            echo "<td><button>Delete Review</button></td>";
             echo "</tr>";
+        }
+
+        if(isset($_POST['deleteBtn'])) {
+            echo $_POST['id'];
+            //delete_review($_POST['id']);
         }
     ?>
 </p>
