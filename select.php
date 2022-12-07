@@ -1,8 +1,8 @@
 <?php
     $user_id = $_GET['user_id'];
-    $student_url = 'http://localhost:8888/student.php?user_id='.$user_id;
-    $tutor_url = 'http://localhost:8888/tutor.php?user_id='.$user_id;
-    $admin_url = 'http://localhost:8888/admin.php?user_id='.$user_id;
+    $student_url = '/student.php?user_id='.$user_id;
+    $tutor_url = '/tutor.php?user_id='.$user_id;
+    $admin_url = '/admin.php?user_id='.$user_id;
 
     $db_host = 'localhost';
     $db_user = 'root';

@@ -35,6 +35,8 @@
             $insert_tag_sql = "INSERT INTO `tag_bridge`(`REVIEW_ID`, `TAG_ID`) VALUES ($review_id, $tag)";
             $conn->query($insert_tag_sql);
         }
+
+        header("Refresh:0");
     }
 
     function delete_review($review_id) {
