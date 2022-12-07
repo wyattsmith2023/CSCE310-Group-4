@@ -71,7 +71,7 @@
                 echo "<br>";
                 echo "<select name=\"tags[]\" size=\"6\" multiple>";
                 foreach($all_tags as $tag)
-                    echo "<option value=".$tag['tag_ID'].">".$tag['NAME']."</option>";
+                    echo "<option value=".$tag['TAG_ID'].">".$tag['NAME']."</option>";
                 echo "</select>";
             ?>
             </td>
