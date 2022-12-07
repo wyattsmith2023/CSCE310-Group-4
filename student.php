@@ -29,8 +29,75 @@
 
   $appointments_list = $mysqli->query($appointment_sql);
 
+  $appointment_detailed = "SELECT availability.AVAILABILITY_ID, availability.DAY, availability.START_TIME, availability.END_TIME, user.F_NAME, user.L_NAME, tutor.AVG_RATING FROM availability JOIN user ON availability.TUTOR_ID = user.USER_ID JOIN tutor ON availability.TUTOR_ID = tutor.USER_ID";
+  $appointments_detailed_list = $mysqli->query($appointment_detailed);
 
-  $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
+  // $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
+  $profile_query = "SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL\n" 
+  . "FROM `user`\n" 
+  . "WHERE `USER_ID`=$user_id";
+  $profile = $mysqli->query($profile_query);
+
+  //FUNCTIONS
+  function update($table, $variable, $value, $where, $id){
+    global $mysqli;
+    $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id";            
+    $query = $mysqli->query($sql);
+  }
+
+  function edit_button($elem){
+    echo "<button onclick=\"show('$elem');show('" . $elem . "_Entry');show('" . $elem . "_Submit');\">Edit</button><br>";
+    echo "<form name = \"form\" action=\"\" method=\"post\">";
+    echo "<label id=\"$elem\" for=\"$elem\" style=\"display:none\">$elem:</label>";
+    echo "<input id=\"" . $elem . "_Entry\" name=\"$elem\" type=\"text\" style=\"display:none\">";
+    echo "<input id=\"" . $elem . "_Submit\" type=\"submit\" style=\"display:none\">";
+    echo "</form>";
+  }
+
+  function button_php($name, $column){
+    global $user_id;
+    global $_POST;
+    if(isset($_POST[$name]) && !empty($_POST[$name])){
+        update('user',$column,$_POST[$name], 'USER_ID', $user_id);
+        header("Refresh:0");
+    }
+  }
+
+  function drop($table, $where, $id){
+    global $mysqli;
+    $sql = "DELETE FROM $table WHERE $where = $id";
+    $query = $mysqli->query($sql);
+    header("Refresh:0");
+  }
+
+  function add($table,$columns,$values){
+    global $mysqli;
+    $sql = "INSERT INTO $table (";
+    foreach($columns as $column){
+        $sql .= $column . ", ";
+    } 
+    $sql = substr($sql, 0, -2);
+    $sql .= ") VALUES (";
+
+    foreach($values as $value){
+        $sql .= $value . ", ";
+    } 
+    $sql = substr($sql, 0, -2);
+    $sql .= ")";
+
+    $query = $mysqli->query($sql);
+    $_POST=array();
+
+  }
+
+  // function add_appointment($avail_num, $location) {
+  //   global $mysqli;
+  //   global $user_id;
+  //   // Need help with this query, making it custom
+  //   echo "<script>console.log("appointment clicked")</script>";
+  //   $mysqli->query("INSERT INTO appointment (STUDENT_ID, APPOINTMENT_ID, TUTOR_ID, SUBJECT_ID, AVAILABILITY_ID, LOCATION) VALUES ('1','999', '1', '1', '1', 'Norway');");
+  // }
+
 ?>
 
 
@@ -38,23 +105,63 @@
 <html>
   
 <head>
-  <style>
+<style>
     h1 {
-      color: green;
+    color: green;
     }
-  </style>
+</style>
+<script>
+    function show(id){
+        elem = document.getElementById(id);
+        elem.style.display = "inline"
+    }
+</script>
 </head>
   
 <body>
   <h1>Student Home</h1>
   <p><?php 
-        $profile_info = $profile_query->fetch_array(MYSQLI_ASSOC);
-        echo "<p><strong>Howdy, " . $profile_info["F_NAME"] . " " . $profile_info["L_NAME"] . "</p>";
-        echo "<h3><strong><i>Profile Info</i></strong></h3>";
+        $profile_info = $profile->fetch_array(MYSQLI_ASSOC);
+        echo "<p><strong>Name: " . $profile_info["F_NAME"] . " " . $profile_info["L_NAME"] . "</p>";
+        ?>
+        <button onclick="show('F_Name');show('F_Name_Entry');show('L_Name');show('L_Name_Entry');show('Name_Submit');">Edit</button><br>
+
+        <form name = "form" action="" method="post">
+            <label id="F_Name" for="F_Name" style="display:none">First Name:</label>
+            <input id="F_Name_Entry" name="F_Name" type="text" style="display:none"> 
+            <label id="L_Name" for="L_Name" style="display:none">Last Name:</label>
+            <input id="L_Name_Entry" name="L_Name" type="text" style="display:none"> 
+            <input id="Name_Submit" type="submit" style="display:none">
+        </form>
+
+        <?php
+        $f_bool = isset($_POST['F_Name']) && !empty($_POST['F_Name']);
+        $l_bool = isset($_POST['L_Name']) && !empty($_POST['L_Name']);
+        if($f_bool || $l_bool){ 
+            if($f_bool){
+                update('user','F_NAME',$_POST['F_Name'], 'USER_ID', $user_id);
+            }
+            if($l_bool){
+                update('user','L_NAME',$_POST['L_Name'], 'USER_ID', $user_id);
+            }
+            header("Refresh:0");
+        }
+
         echo "<p><strong>Username: </strong> " . $profile_info["USERNAME"] . "</p>";
+        edit_button("Username");
+        button_php("Username", "USERNAME");
+
         echo "<p><strong>Password: </strong> " . $profile_info["PASSWORD"] . "</p>";
+        edit_button("Password");
+        button_php("Password", "Password");
+
         echo "<p><strong>Email: </strong> " . $profile_info["EMAIL"] . "</p>";
+        edit_button("Email");
+        button_php("Email", "EMAIL");
+
         echo "<p><strong>Phone: </strong>" . $profile_info["PHONE"] . "</p>";
+        edit_button("Phone");
+        button_php("Phone", "PHONE");
       ?>
   </p>
   <h1>Your Appointments</h1>
@@ -82,7 +189,54 @@
   ?></p>
 
   <h1>Tutor Search</h1>
-  <button><a href="http://landonpalmer.com">SEARCH</a></button>
+  <button><a href="/search.php">SEARCH</a></button>
+
+  <h1>Create Appointment</h1>
+  <h2>Available appointments: </h2>
+  <p><?php
+    echo "<table>";
+    echo "<tr>";
+    echo "<th>AVAILABILITY #</th>";
+    echo "<th>DAY</th>";
+    echo "<th>START TIME</th>";
+    echo "<th>END TIME</th>";
+    echo "<th>TUTOR NAME</th>";
+    echo "<th>RATING</th>";
+    while($row = mysqli_fetch_array($appointments_detailed_list))
+  {
+    echo "<tr>";
+    echo "<th>" . $row["AVAILABILITY_ID"] . "</th>";
+    echo "<th>" . $row["DAY"] . "</th>";
+    echo "<th>" . $row["START_TIME"] . "</th>";
+    echo "<th>" . $row["END_TIME"] . "</th>";
+    echo "<th>" . $row["F_NAME"] . " " . $row["L_NAME"] . "</th>";
+    echo "<th>" . $row["AVG_RATING"] . "</th>";
+    echo "</tr>";
+  }
+  echo "</table>";
+  echo "<form></form>";
+  ?>
+
+
+</p>
+
+<!-- Form for creating appointment -->
+<form name = "form2" action="" method="post">
+<label id="A_Num" for="A_Num">Availability #:</label>
+<input id="A_Num_Entry" name="A_Num" type="text"> 
+<label id="A_Loc" for="A_Loc">Location:</label>
+<input id="A_Loc_Entry" name="A_Loc" type="text"> 
+<input type="submit">
+</form>
+<?php
+        $a_num_bool = isset($_POST['A_Num']) && !empty($_POST['A_Num']);
+        $a_loc_bool = isset($_POST['A_Loc']) && !empty($_POST['A_Loc']);
+        if($a_num_bool && $a_loc_bool){ 
+
+          header("Refresh:0");
+        }
+?>
+
 </body>
   
 </html>
