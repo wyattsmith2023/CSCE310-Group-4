@@ -22,10 +22,7 @@
     exit();
   }
   
-  $appointment_sql = "SELECT appointment.STUDENT_ID, appointment.LOCATION, availability.DAY, availability.START_TIME, availability.END_TIME \n"
-    . "FROM appointment \n"
-    . "JOIN availability ON appointment.AVAILABILITY_ID = availability.AVAILABILITY_ID \n"
-    . "WHERE STUDENT_ID=$user_id\n";
+  $appointment_sql = "SELECT * FROM all_appointments WHERE STUDENT_ID=$user_id";
 
   $appointments_list = $mysqli->query($appointment_sql);
 
@@ -37,6 +34,8 @@
   . "FROM `user`\n" 
   . "WHERE `USER_ID`=$user_id";
   $profile = $mysqli->query($profile_query);
+
+  $user_phone_numbers = $mysqli->query("SELECT USERNAME, PHONE FROM user");
 
   //FUNCTIONS
   function update($table, $variable, $value, $where, $id){
@@ -88,6 +87,13 @@
     $query = $mysqli->query($sql);
     $_POST=array();
 
+  }
+
+  function add_appointment($avail_num, $location) {
+      global $user_id;
+      echo "I am " . $avail_num . "at " . $location . "but " . $user_id;  
+      global $mysqli;
+      $added_appointment = $mysqli->query("INSERT INTO appointment (STUDENT_ID, APPOINTMENT_ID, TUTOR_ID, SUBJECT_ID, AVAILABILITY_ID, LOCATION) VALUES ('1','999', '2', '1', '1', 'Norway');");
   }
 
   // function add_appointment($avail_num, $location) {
@@ -191,6 +197,9 @@
   <h1>Tutor Search</h1>
   <button><a href="/search.php">SEARCH</a></button>
 
+  <h1>Write a Review</h1>
+  <button><a href="/review.php">GO</a></button>
+
   <h1>Create Appointment</h1>
   <h2>Available appointments: </h2>
   <p><?php
@@ -232,10 +241,28 @@
         $a_num_bool = isset($_POST['A_Num']) && !empty($_POST['A_Num']);
         $a_loc_bool = isset($_POST['A_Loc']) && !empty($_POST['A_Loc']);
         if($a_num_bool && $a_loc_bool){ 
-
+          add_appointment($_POST['A_Num'], $_POST['A_Loc']);
           header("Refresh:0");
         }
 ?>
+
+<h1>Need more help?</h1>
+<h2>We are a community. Here are people to reach out to if you need help!</h2>
+<p><?php
+    echo "<table>";
+    echo "<tr>";
+    echo "<th>USER</th>";
+    echo "<th>PHONE NUMBER</th>";
+    while($row = mysqli_fetch_array($user_phone_numbers))
+  {
+    echo "<tr>";
+    echo "<th>" . $row["USERNAME"] . "</th>";
+    echo "<th>" . $row["PHONE"] . "</th>";
+    echo "</tr>";
+  }
+  echo "</table>";
+  ?>
+</p>
 
 </body>
   
