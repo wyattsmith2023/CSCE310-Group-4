@@ -48,7 +48,16 @@
         $conn->query($review_del);
         
         $conn->close();
+        header('Refresh:0');
     }
+
+    function update($table, $variable, $value, $where, $id){
+        global $db_host, $db_user, $db_password, $db_db;
+        $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
+        $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id";      
+        $conn->query($sql);
+        header('Refresh:0');
+      }
 ?>
 
 <!DOCTYPE html>
@@ -62,7 +71,7 @@
 <p>
     <form action="" method="post">
         <?php
-            echo "<label>Review Tutor</label>";
+            echo "<label>Tutors</label>";
             echo "<br>";
             echo "<select name=\"tutor\" size=\"4\">";
             foreach($all_tutors as $tutor)
@@ -100,7 +109,7 @@
             </td></tr>
         </table>
         <br><br>
-        <input name="submitBtn" type="submit" value="Submit">
+        <input name="submitBtn" type="submit" value="Submit Review"/>
     </form>
     <?php
         if(isset($_POST['submitBtn'])) {
@@ -118,6 +127,9 @@
     <?php
         echo "<table>";
         echo "<tr>";
+        echo "<th>Review ID<th>";
+        echo "<th>Tutor ID<th>";
+        echo "<th>Name<th>";
         echo "<th>Comment</th>";
         echo "<th>Stars</th>";
         echo "<th>Tags</th>";
@@ -126,6 +138,9 @@
         
         foreach($user_reviews as $review) {
             echo "<tr>";
+            echo "<td>".$review['REVIEW_ID']."</td>";
+            echo "<td>".$review['TUTOR_ID']."</td>";
+            echo "<td>".$review['NAME']."</td>";
             echo "<td>".$review['COMMENT']."</td>";
             echo "<td>".$review['STARS']."</td>";
             echo "<td>".$review['TAGS']."</td>";
@@ -133,9 +148,59 @@
             echo "</tr>";
         }
 
+        echo "</table>";
+
         if(isset($_POST['deleteBtn'])) {
             echo $_POST['id'];
             //delete_review($_POST['id']);
+        }
+    ?>
+    <br><br>
+    <h1>Edit/Delete Reviews</h1>
+    <br>
+    <form action="" method="post">
+    <table>
+        <tr>
+            <td><label title="text">Review ID</label>
+                <input type="text" name="review_id"/></td>
+            <td><label title="text">Comment</label>
+                <input type="text" name="comment"/></td>
+            <td>
+                <?php
+                    echo "<label>Stars</label>";
+                    echo "<br>";
+                    echo "<select name=\"stars\" size=\"3\">";
+                    echo "<option value=1>1 Star</option>";
+                    echo "<option value=2>2 Stars</option>";
+                    echo "<option value=3>3 Stars</option>";
+                    echo "<option value=4>4 Stars</option>";
+                    echo "<option value=5>5 Stars</option>";
+                    echo "</select>";
+                ?>
+            </td>
+        </tr>
+        <tr>
+            <input name="editBtn" type="submit" value="Edit Review"/>
+            <input name="deleteBtn" type="submit" value="Delete Review"/>
+        </tr>
+    </table>
+    </form>
+    <?php
+        if(isset($_POST['editBtn'])) {
+            $id_bool = isset($_POST['review_id']) && !empty($_POST['review_id']);
+            $c_bool = isset($_POST['comment']) && !empty($_POST['comment']);
+            $r_bool = isset($_POST['stars']) && !empty($_POST['stars']);
+
+            if($id_bool && $c_bool)
+                update('review', 'COMMENT', $_POST['comment'], 'REVIEW_ID', $_POST['review_id']);
+            if($id_bool && $r_bool)
+                update('review', 'STARS', $_POST['stars'], 'REVIEW_ID', $_POST['review_id']);
+        }
+        if(isset($_POST['deleteBtn'])) {
+            $id_bool = isset($_POST['review_id']) && !empty($_POST['review_id']);
+
+            if($id_bool)
+                delete_review($_POST['review_id']);
         }
     ?>
 </p>
