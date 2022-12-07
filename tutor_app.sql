@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.0
+-- version 5.1.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Dec 07, 2022 at 08:06 PM
+-- Generation Time: Dec 07, 2022 at 10:01 PM
 -- Server version: 5.7.34
 -- PHP Version: 7.4.21
 
@@ -491,6 +491,22 @@ CREATE TABLE `tutor_subjects` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `tutor_subjects_search`
+-- (See below for the actual view)
+--
+CREATE TABLE `tutor_subjects_search` (
+`F_NAME` varchar(50)
+,`L_NAME` varchar(50)
+,`EMAIL` varchar(50)
+,`NAME` varchar(50)
+,`TUTOR_ID` int(50)
+,`SUBJECT_ID` int(50)
+,`AVG_RATING` float
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user`
 --
 
@@ -541,7 +557,7 @@ DELIMITER ;
 --
 DROP TABLE IF EXISTS `admin_appointments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM (((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM (((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`))) ;
 
 -- --------------------------------------------------------
 
@@ -605,6 +621,15 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 DROP TABLE IF EXISTS `tutor_subjects`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_subjects`  AS SELECT `subject_bridge`.`TUTOR_ID` AS `TUTOR_ID`, `subject_bridge`.`SUBJECT_ID` AS `SUBJECT_ID`, `subject`.`NAME` AS `NAME` FROM (`subject_bridge` join `subject` on((`subject_bridge`.`SUBJECT_ID` = `subject`.`SUBJECT_ID`))) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `tutor_subjects_search`
+--
+DROP TABLE IF EXISTS `tutor_subjects_search`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_subjects_search`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `user`.`EMAIL` AS `EMAIL`, `subject`.`NAME` AS `NAME`, `subject_bridge`.`TUTOR_ID` AS `TUTOR_ID`, `subject_bridge`.`SUBJECT_ID` AS `SUBJECT_ID`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`TUTOR_ID`))) join `tutor` on((`tutor`.`USER_ID` = `subject_bridge`.`TUTOR_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`))) ;
 
 --
 -- Indexes for dumped tables
