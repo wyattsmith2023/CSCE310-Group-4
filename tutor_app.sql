@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:8889
--- Generation Time: Dec 08, 2022 at 10:54 AM
+-- Generation Time: Dec 08, 2022 at 07:56 PM
 -- Server version: 5.7.34
 -- PHP Version: 7.4.21
 
@@ -132,11 +132,8 @@ CREATE TABLE `class` (
 --
 
 INSERT INTO `class` (`CLASS_ID`, `CLASS_CODE`, `CLASS_NUMBER`, `NAME`) VALUES
-(8, 'CSCE', 310, 'Database'),
-(9, 'STAT', 211, 'Intro to Stats'),
-(10, 'PHYS', 206, 'Mechanics'),
-(11, 'ENGR', 312, 'Tech Management'),
-(13, 'STAT', 211, 'Intro to Statistics');
+(13, 'STAT', 211, 'Intro to Statistics'),
+(15, 'CSCE', 310, 'Database');
 
 -- --------------------------------------------------------
 
@@ -155,7 +152,8 @@ CREATE TABLE `class_bridge` (
 --
 
 INSERT INTO `class_bridge` (`CLASSES_BRIDGE_ID`, `TUTOR_ID`, `CLASS_ID`) VALUES
-(10, 135, 13);
+(10, 135, 13),
+(12, 164, 15);
 
 -- --------------------------------------------------------
 
@@ -262,7 +260,9 @@ CREATE TABLE `subject` (
 --
 
 INSERT INTO `subject` (`SUBJECT_ID`, `NAME`) VALUES
-(36, 'Statistics');
+(36, 'Statistics'),
+(37, 'Computer Science'),
+(38, 'Advanced Math');
 
 -- --------------------------------------------------------
 
@@ -281,7 +281,9 @@ CREATE TABLE `subject_bridge` (
 --
 
 INSERT INTO `subject_bridge` (`SUBJECT_BRIDGE_ID`, `TUTOR_ID`, `SUBJECT_ID`) VALUES
-(15, 135, 36);
+(15, 135, 36),
+(16, 164, 37),
+(17, 164, 38);
 
 -- --------------------------------------------------------
 
@@ -680,13 +682,13 @@ ALTER TABLE `availability`
 -- AUTO_INCREMENT for table `class`
 --
 ALTER TABLE `class`
-  MODIFY `CLASS_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `CLASS_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `class_bridge`
 --
 ALTER TABLE `class_bridge`
-  MODIFY `CLASSES_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `CLASSES_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `review`
@@ -698,13 +700,13 @@ ALTER TABLE `review`
 -- AUTO_INCREMENT for table `subject`
 --
 ALTER TABLE `subject`
-  MODIFY `SUBJECT_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `SUBJECT_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `subject_bridge`
 --
 ALTER TABLE `subject_bridge`
-  MODIFY `SUBJECT_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `SUBJECT_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `tag`
