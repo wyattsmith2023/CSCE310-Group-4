@@ -412,7 +412,7 @@
             }
             echo "</table>";
         ?>
-        <button onclick="show('User_ID');show('User_ID_Entry');show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Edit');">Edit</button>
+        <button onclick="show('User_ID');show('User_ID_Entry');show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('User_Edit');">Edit</button>
         <button onclick="show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Add');">Add</button>
         <button onclick="show('User_ID');show('User_ID_Entry');show('User_Delete');">Delete</button>
         <form name = "form" action="" method="post">
