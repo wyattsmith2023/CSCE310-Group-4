@@ -47,8 +47,15 @@
   //FUNCTIONS
   function update($table, $variable, $value, $where, $id){
     global $mysqli;
-    $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id";            
-    $query = $mysqli->query($sql);
+    $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id"; 
+    $mysqli->query($sql);
+  }
+
+  function update_num($table, $variable, $value, $where, $id){
+    global $mysqli;
+    $sql = "UPDATE $table SET $variable=$value WHERE $where=$id";        
+    $mysqli->query($sql);
+    
   }
 
   function edit_button($elem){
@@ -72,9 +79,8 @@
   function drop($table, $where, $id){
     global $mysqli;
     $sql = "DELETE FROM $table WHERE $where = $id";
-    $query = $mysqli->query($sql);
-    echo $sql;
-    //header("Refresh:0");
+    $mysqli->query($sql);
+    header("Refresh:0");
   }
 
   function add($table,$columns,$values){
@@ -101,6 +107,9 @@
     global $db_host, $db_user, $db_password, $db_db;
     $tag_bridge_del = "DELETE FROM `tag_bridge` WHERE `REVIEW_ID`=$review_id";
     $review_del = "DELETE FROM `review` WHERE `REVIEW_ID`=$review_id";
+
+    echo $tag_bridge_del;
+    echo $review_del;
 
     $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
     $conn->query($tag_bridge_del);
@@ -162,11 +171,10 @@
                 echo "</tr>";
             }
             echo "</table>";
-            echo "<form></form>";
         ?>
-    <button onclick="show('User_ID');show('User_ID_Entry');show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Edit');">Edit</button>
-    <button onclick="show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Add');">Add</button>
-    <button onclick="show('User_ID');show('User_ID_Entry');show('User_Delete');">Delete</button>
+        <button onclick="show('User_ID');show('User_ID_Entry');show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Edit');">Edit</button>
+        <button onclick="show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Add');">Add</button>
+        <button onclick="show('User_ID');show('User_ID_Entry');show('User_Delete');">Delete</button>
         <form name = "form" action="" method="post">
             <label id="User_ID" for="User_ID" style="display:none">ID:</label>
             <input id="User_ID_Entry" name="User_ID" type="text" style="display:none"> 
@@ -215,13 +223,13 @@
                     if(isset($_POST['Phone']) && !empty($_POST['Phone'])){
                         update('user','PHONE',$_POST['Phone'],'USER_ID',$id);
                     }
-                    if(isset($_POST['Is_Student']) && !empty($_POST['Is_Student'])){
+                    if(isset($_POST['Is_Student'])){
                         update('user','IS_STUDENT',$_POST['Is_Student'],'USER_ID',$id);
                     }
-                    if(isset($_POST['Is_Tutor']) && !empty($_POST['Is_Tutor'])){
+                    if(isset($_POST['Is_Tutor'])){
                         update('user','IS_TUTOR',$_POST['Is_Tutor'],'USER_ID',$id);
                     }
-                    if(isset($_POST['Is_Admin']) && !empty($_POST['Is_Admin'])){
+                    if(isset($_POST['Is_Admin'])){
                         update('user','IS_ADMIN',$_POST['Is_Admin'],'USER_ID',$id);
                     }
                     
@@ -261,7 +269,7 @@
             <?php
             echo "<table>";
             echo "<tr>";
-            echo "<th>APPT ID#</th>";
+            echo "<th>APPT ID</th>";
             echo "<th>STUDENT ID</th>";
             echo "<th>STUDENT</th>";
             echo "<th>TUTOR ID</th>";
@@ -291,10 +299,10 @@
         ?>
     <h2>Update Reviews: </h2>
         <p>
-            <?php
+        <?php
             echo "<table>";
             echo "<tr>";
-            echo "<th>REVIEW ID#</th>";
+            echo "<th>REVIEW ID</th>";
             echo "<th>STUDENT ID</th>";
             echo "<th>STUDENT</th>";
             echo "<th>TUTOR ID</th>";
@@ -319,6 +327,59 @@
             }
             echo "</table>";
             echo "<form></form>";
+        ?>
+        <button onclick="show('Review_ID');show('Review_ID_Entry');show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Comment');show('Comment_Entry');show('Stars');show('Stars_Entry');show('Review_Edit');">Edit</button>
+        <button onclick="show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Comment');show('Comment_Entry');show('Stars');show('Stars_Entry');show('Review_Add');">Add</button>
+        <button onclick="show('Review_ID');show('Review_ID_Entry');show('Review_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="Review_ID" for="Review_ID" style="display:none">ID:</label>
+            <input id="Review_ID_Entry" name="Review_ID" type="text" style="display:none"> 
+            <label id="Student_ID" for="Student_ID" style="display:none">Student ID:</label>
+            <input id="Student_ID_Entry" name="Student_ID" type="text" style="display:none"> 
+            <label id="Tutor_ID" for="Tutor_ID" style="display:none">Tutor ID:</label>
+            <input id="Tutor_ID_Entry" name="Tutor_ID" type="text" style="display:none"> 
+            <label id="Comment" for="Comment" style="display:none">Comment:</label>
+            <input id="Comment_Entry" name="Comment" type="text" style="display:none">
+            <label id="Stars" for="Stars" style="display:none">Stars:</label>
+            <input id="Stars_Entry" name="Stars" type="text" style="display:none">
+            <input id="Review_Edit" name="Review_Edit" type="submit" style="display:none">
+            <input id="Review_Add" name="Review_Add" type="submit" style="display:none">
+            <input id="Review_Delete" name="Review_Delete" type="submit" style="display:none">
+        </form>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['Review_Edit'])){
+                if(isset($_POST['Review_ID']) && !empty($_POST['Review_ID'])){
+                    $id = $_POST['Review_ID'];
+                    if(isset($_POST['Student_ID']) && !empty($_POST['Student_ID'])){
+                        update('review','STUDENT_ID',$_POST['Student_ID'],'REVIEW_ID',$id);
+                    }
+                    if(isset($_POST['Tutor_ID']) && !empty($_POST['Tutor_ID'])){
+                        update('review','TUTOR_ID',$_POST['Tutor_ID'],'REVIEW_ID',$id);
+                    }
+                    if(isset($_POST['Comment']) && !empty($_POST['Comment'])){
+                        update('review','COMMENT',$_POST['Comment'],'REVIEW_ID',$id);
+                    }
+                    if(isset($_POST['Stars']) && !empty($_POST['Stars'])){
+                        update('review','STARS',$_POST['Stars'],'REVIEW_ID',$id);
+                    }                 
+                }
+
+                header("Refresh:0");
+            }
+            else if(isset($_POST['Review_Add'])){
+                if(isset($_POST['Student_ID']) && isset($_POST['Tutor_ID']) && isset($_POST['Comment']) && isset($_POST['Stars'])){
+                    add('review', array('STUDENT_ID','TUTOR_ID','COMMENT','STARS', 'DATE'), array("'".$_POST['Student_ID']."'", "'".$_POST['Tutor_ID']."'", "'".$_POST['Comment']."'", "'".$_POST['Stars']."'", "'".date('Y-m-d')."'"));
+                    header("Refresh:0");
+                }
+            }
+            else if(isset($_POST['Review_Delete'])){    
+                if(isset($_POST['Review_ID'])){
+                    drop('tag_bridge', 'REVIEW_ID', $_POST['Review_ID']);
+                    drop('review', 'REVIEW_ID', $_POST['Review_ID']);
+                }
+            }
+        }
         ?>
         <button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back</a></button>
     </body>
