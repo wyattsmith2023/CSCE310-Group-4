@@ -254,7 +254,7 @@ if(isset($_POST['Delete'])){
   ?></p>
 
   <h1>Tutor Search (by class)</h1>
-  <button><a href="/search.php">SEARCH</a></button>
+  <button><a href=<?php echo "/search.php?user_id=".$user_id?>>SEARCH</a></button>
 
   <h1>Write a Review</h1>
 
