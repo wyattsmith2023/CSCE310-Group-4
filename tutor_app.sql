@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 08, 2022 at 01:05 AM
+-- Generation Time: Dec 08, 2022 at 04:56 AM
 -- Server version: 5.7.24
 -- PHP Version: 8.0.1
 
@@ -37,6 +37,7 @@ CREATE TABLE `admin_appointments` (
 ,`DAY` varchar(15)
 ,`START_TIME` time
 ,`END_TIME` time
+,`SUBJECT` varchar(50)
 ,`TUTOR` varchar(101)
 ,`STUDENT` varchar(101)
 );
@@ -93,7 +94,10 @@ CREATE TABLE `appointment` (
 --
 
 INSERT INTO `appointment` (`APPOINTMENT_ID`, `STUDENT_ID`, `TUTOR_ID`, `SUBJECT_ID`, `AVAILABILITY_ID`, `LOCATION`) VALUES
-(1, 1, 2, 1, 2, 'Evans Library');
+(1, 100, 2, 6, 2, 'Evans Library'),
+(1000, 1, 2, 4, 2, 'fghj'),
+(1001, 1, 2, 2, 2, 'L'),
+(1002, 1, 2, 3, 2, '5454');
 
 -- --------------------------------------------------------
 
@@ -209,7 +213,8 @@ INSERT INTO `review` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`,
 (34, 'Test', 3, 100, 1, '2022-12-07'),
 (35, 'Test', 3, 100, 1, '2022-12-07'),
 (36, 'Test', 3, 100, 1, '2022-12-07'),
-(41, 'Billy was shitty', 3, 100, 1, '2022-12-07');
+(41, 'Billy was shitty', 3, 100, 1, '2022-12-07'),
+(45, 'you are great', 3, 2, 100, '2022-12-08');
 
 --
 -- Triggers `review`
@@ -375,7 +380,9 @@ INSERT INTO `tag_bridge` (`TAG_BRIDGE_ID`, `REVIEW_ID`, `TAG_ID`) VALUES
 (11, 28, 112),
 (26, 41, 100),
 (27, 41, 101),
-(28, 41, 102);
+(28, 41, 102),
+(30, 45, 112),
+(31, 45, 101);
 
 -- --------------------------------------------------------
 
@@ -393,7 +400,7 @@ CREATE TABLE `tutor` (
 --
 
 INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
-(2, 2.8),
+(2, 3),
 (100, 2.91667);
 
 -- --------------------------------------------------------
@@ -519,7 +526,7 @@ DELIMITER ;
 --
 DROP TABLE IF EXISTS `admin_appointments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM (((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, `subject`.`NAME` AS `SUBJECT`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM ((((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`))) join `subject` on((`appointment`.`SUBJECT_ID` = `subject`.`SUBJECT_ID`)))  ;
 
 -- --------------------------------------------------------
 
@@ -694,7 +701,7 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `appointment`
 --
 ALTER TABLE `appointment`
-  MODIFY `APPOINTMENT_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1000;
+  MODIFY `APPOINTMENT_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1003;
 
 --
 -- AUTO_INCREMENT for table `availability`
@@ -718,7 +725,7 @@ ALTER TABLE `class_bridge`
 -- AUTO_INCREMENT for table `review`
 --
 ALTER TABLE `review`
-  MODIFY `REVIEW_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `REVIEW_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `subject`
@@ -742,7 +749,7 @@ ALTER TABLE `tag`
 -- AUTO_INCREMENT for table `tag_bridge`
 --
 ALTER TABLE `tag_bridge`
-  MODIFY `TAG_BRIDGE_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `TAG_BRIDGE_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `user`
