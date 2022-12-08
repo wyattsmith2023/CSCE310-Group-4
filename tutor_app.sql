@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.2
+-- version 5.1.0
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Dec 08, 2022 at 04:56 AM
--- Server version: 5.7.24
--- PHP Version: 8.0.1
+-- Host: localhost:8889
+-- Generation Time: Dec 08, 2022 at 10:54 AM
+-- Server version: 5.7.34
+-- PHP Version: 7.4.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -29,6 +29,7 @@ SET time_zone = "+00:00";
 --
 CREATE TABLE `admin_appointments` (
 `APPOINTMENT_ID` int(50)
+,`SUBJECT` varchar(50)
 ,`STUDENT_ID` int(50)
 ,`TUTOR_ID` int(50)
 ,`SUBJECT_ID` int(50)
@@ -37,7 +38,6 @@ CREATE TABLE `admin_appointments` (
 ,`DAY` varchar(15)
 ,`START_TIME` time
 ,`END_TIME` time
-,`SUBJECT` varchar(50)
 ,`TUTOR` varchar(101)
 ,`STUDENT` varchar(101)
 );
@@ -50,6 +50,7 @@ CREATE TABLE `admin_appointments` (
 --
 CREATE TABLE `all_appointments` (
 `STUDENT_ID` int(50)
+,`APPOINTMENT_ID` int(50)
 ,`LOCATION` varchar(50)
 ,`DAY` varchar(15)
 ,`START_TIME` time
@@ -89,16 +90,6 @@ CREATE TABLE `appointment` (
   `LOCATION` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Dumping data for table `appointment`
---
-
-INSERT INTO `appointment` (`APPOINTMENT_ID`, `STUDENT_ID`, `TUTOR_ID`, `SUBJECT_ID`, `AVAILABILITY_ID`, `LOCATION`) VALUES
-(1, 100, 2, 6, 2, 'Evans Library'),
-(1000, 1, 2, 4, 2, 'fghj'),
-(1001, 1, 2, 2, 2, 'L'),
-(1002, 1, 2, 3, 2, '5454');
-
 -- --------------------------------------------------------
 
 --
@@ -118,13 +109,10 @@ CREATE TABLE `availability` (
 --
 
 INSERT INTO `availability` (`AVAILABILITY_ID`, `DAY`, `TUTOR_ID`, `START_TIME`, `END_TIME`) VALUES
-(1, 'Friday', 2, '12:37:00', '01:44:00'),
-(2, 'Wednesday', 100, '11:00:00', '13:00:00'),
-(3, 'Saturday', 2, '05:00:00', '09:00:00'),
-(4, 'Friday', 100, '06:00:00', '07:00:00'),
-(5, 'Friday', 100, '06:00:00', '08:00:00'),
-(7, 'Tuesday', 100, '08:00:00', '10:00:00'),
-(19, 'Monday', 100, '23:00:00', '23:30:00');
+(31, 'Monday', 104, '12:00:00', '15:00:00'),
+(32, 'Tuesday', 104, '12:00:00', '15:00:00'),
+(34, 'Wednesday', 104, '10:00:00', '16:00:00'),
+(36, 'Saturday', 135, '22:00:00', '23:00:00');
 
 -- --------------------------------------------------------
 
@@ -144,11 +132,11 @@ CREATE TABLE `class` (
 --
 
 INSERT INTO `class` (`CLASS_ID`, `CLASS_CODE`, `CLASS_NUMBER`, `NAME`) VALUES
-(1, 'CSCE', 310, 'Database Systems'),
-(2, 'CSCE', 436, 'HCI'),
-(3, 'CSCE', 436, 'HCI'),
-(4, 'CSCE', 436, 'HCI'),
-(5, 'CSCE', 436, 'HCI');
+(8, 'CSCE', 310, 'Database'),
+(9, 'STAT', 211, 'Intro to Stats'),
+(10, 'PHYS', 206, 'Mechanics'),
+(11, 'ENGR', 312, 'Tech Management'),
+(13, 'STAT', 211, 'Intro to Statistics');
 
 -- --------------------------------------------------------
 
@@ -167,8 +155,7 @@ CREATE TABLE `class_bridge` (
 --
 
 INSERT INTO `class_bridge` (`CLASSES_BRIDGE_ID`, `TUTOR_ID`, `CLASS_ID`) VALUES
-(1, 2, 1),
-(7, 100, 2);
+(10, 135, 13);
 
 -- --------------------------------------------------------
 
@@ -202,19 +189,8 @@ CREATE TABLE `review` (
 --
 
 INSERT INTO `review` (`REVIEW_ID`, `COMMENT`, `STARS`, `TUTOR_ID`, `STUDENT_ID`, `DATE`) VALUES
-(1, 'Tom did the job. Mid af.', 5, 2, 1, '2022-11-01'),
-(2, 'REVIEW bad', 1, 2, 1, '2022-11-09'),
-(22, 'Test', 3, 100, 1, '2022-12-07'),
-(23, 'Test', 3, 100, 1, '2022-12-07'),
-(24, 'Test Review', 3, 100, 1, '2022-12-07'),
-(28, 'Test', 2, 100, 1, '2022-12-07'),
-(31, 'ii', 3, 100, 1, '2022-12-07'),
-(32, 'ii', 3, 100, 1, '2022-12-07'),
-(34, 'Test', 3, 100, 1, '2022-12-07'),
-(35, 'Test', 3, 100, 1, '2022-12-07'),
-(36, 'Test', 3, 100, 1, '2022-12-07'),
-(41, 'Billy was shitty', 3, 100, 1, '2022-12-07'),
-(45, 'you are great', 3, 2, 100, '2022-12-08');
+(3, 'GREAT', 5, 104, 166, '2022-12-08'),
+(5, 'I LOVE LANDO', 5, 135, 165, '2022-12-08');
 
 --
 -- Triggers `review`
@@ -226,14 +202,14 @@ CREATE TRIGGER `add_basic_tag` AFTER INSERT ON `review` FOR EACH ROW BEGIN
             `REVIEW_ID`,
             `TAG_ID`
         )
-        VALUES(new.REVIEW_ID, 111);
+        VALUES(new.REVIEW_ID, 112);
     END IF;
     IF new.STARS < 4 THEN
         INSERT INTO `tag_bridge`(
             `REVIEW_ID`,
             `TAG_ID`
         )
-        VALUES(new.REVIEW_ID, 112);
+        VALUES(new.REVIEW_ID, 111);
     END IF;
 END
 $$
@@ -265,8 +241,10 @@ CREATE TABLE `student` (
 --
 
 INSERT INTO `student` (`USER_ID`, `GPA`, `CLASS_YEAR`) VALUES
-(1, 4, 1),
-(100, 0, 1876);
+(164, 0, 1876),
+(165, 0, 1876),
+(166, 0, 1876),
+(167, 0, 1876);
 
 -- --------------------------------------------------------
 
@@ -284,27 +262,7 @@ CREATE TABLE `subject` (
 --
 
 INSERT INTO `subject` (`SUBJECT_ID`, `NAME`) VALUES
-(1, 'Statistics'),
-(2, 'Math'),
-(3, 'Math'),
-(4, 'Math'),
-(5, 'Math'),
-(6, 'Math'),
-(7, 'Math'),
-(8, 'Math'),
-(9, 'Math'),
-(10, 'Math'),
-(11, 'Science'),
-(12, 'Science'),
-(13, 'Science'),
-(14, 'Science'),
-(15, 'Science'),
-(16, 'Science'),
-(17, 'Science'),
-(18, 'Science'),
-(25, 'Astronomy'),
-(26, 'Astronomy'),
-(27, 'CSCE');
+(36, 'Statistics');
 
 -- --------------------------------------------------------
 
@@ -323,8 +281,7 @@ CREATE TABLE `subject_bridge` (
 --
 
 INSERT INTO `subject_bridge` (`SUBJECT_BRIDGE_ID`, `TUTOR_ID`, `SUBJECT_ID`) VALUES
-(1, 100, 1),
-(11, 100, 27);
+(15, 135, 36);
 
 -- --------------------------------------------------------
 
@@ -357,7 +314,8 @@ INSERT INTO `tag` (`TAG_ID`, `NAME`) VALUES
 (112, 'Very Helpful'),
 (113, 'Terrible'),
 (114, 'Amazing'),
-(115, 'Caring');
+(115, 'Caring'),
+(116, 'Understanding');
 
 -- --------------------------------------------------------
 
@@ -376,13 +334,9 @@ CREATE TABLE `tag_bridge` (
 --
 
 INSERT INTO `tag_bridge` (`TAG_BRIDGE_ID`, `REVIEW_ID`, `TAG_ID`) VALUES
-(3, 2, 109),
-(11, 28, 112),
-(26, 41, 100),
-(27, 41, 101),
-(28, 41, 102),
-(30, 45, 112),
-(31, 45, 101);
+(3, 3, 112),
+(6, 5, 112),
+(7, 5, 100);
 
 -- --------------------------------------------------------
 
@@ -400,8 +354,13 @@ CREATE TABLE `tutor` (
 --
 
 INSERT INTO `tutor` (`USER_ID`, `AVG_RATING`) VALUES
-(2, 3),
-(100, 2.91667);
+(104, 5),
+(105, 0),
+(106, 0),
+(107, 0),
+(126, 0),
+(135, 5),
+(164, 0);
 
 -- --------------------------------------------------------
 
@@ -498,9 +457,17 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`USER_ID`, `USERNAME`, `PASSWORD`, `F_NAME`, `L_NAME`, `PHONE`, `EMAIL`, `IS_STUDENT`, `IS_TUTOR`, `IS_ADMIN`) VALUES
-(1, 'landonjpalmer', 'password', 'Landon', 'Palmer', '911-555-5555', 'landonjpalmer@tamu.edu', 1, 0, 0),
-(2, 'tomhanks', 'password', 'Tom', 'Hanks', '555-555-5555', 'tomhanks@hanks.com', 0, 1, 0),
-(100, 'wsmith', 'new', 'Wyatt', 'Smith', '123', 'wyattsmith@tamu.edu', 1, 1, 1);
+(1, 'GOD', 'password', 'Jesus', 'Christ', '1', 'theson@heaven.com', 1, 1, 1),
+(104, 'lukeskywalker', 'luke', 'Luke', 'Skywalker', '456', 'luke@rebellion.com', 0, 1, 1),
+(105, 'leiaorgana', 'leia', 'Leia', 'Organa', '456', 'leia@rebellion.com', 0, 1, 1),
+(106, 'hansolo', 'han', 'Han', 'Solo', '456', 'han@rebellion.com', 0, 1, 1),
+(107, 'darthvader', 'darth', 'Darth', 'Vader', '456', 'vader@empire.com', 0, 1, 0),
+(126, 'darthsidious', 'darth', 'Sheev', 'Palpatine', '123456', 'emperor@empire.com', 1, 1, 1),
+(135, 'landocalrissian', 'lando', 'Lando', 'Calrissian', '56', 'lando@rebellion.com', 0, 1, 0),
+(164, 'benkenobi', 'ben', 'Ben', 'Kenobi', '123456', 'ben@jedi.com', 1, 1, 1),
+(165, 'macewindu', 'mace', 'Mace', 'Windu', '123', 'mace@jedi.com', 1, 0, 0),
+(166, 'anakinskywalker', 'anakin', 'Anakin', 'Skywalker', '123', 'anakin@jedi.com', 1, 0, 0),
+(167, 'padmeamidal', 'padme', 'Padme', 'Amidal', '123', 'padme@senate.com', 1, 0, 0);
 
 --
 -- Triggers `user`
@@ -526,7 +493,7 @@ DELIMITER ;
 --
 DROP TABLE IF EXISTS `admin_appointments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, `subject`.`NAME` AS `SUBJECT`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM ((((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`))) join `subject` on((`appointment`.`SUBJECT_ID` = `subject`.`SUBJECT_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `admin_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `subject`.`NAME` AS `SUBJECT`, `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`SUBJECT_ID` AS `SUBJECT_ID`, `appointment`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `TUTOR`, `student_query`.`STUDENT` AS `STUDENT` FROM ((((`appointment` join `user` on((`appointment`.`TUTOR_ID` = `user`.`USER_ID`))) join `subject` on((`appointment`.`SUBJECT_ID` = `subject`.`SUBJECT_ID`))) join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) join (select concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `STUDENT`,`user`.`USER_ID` AS `USER_ID` from `user`) `student_query` on((`appointment`.`STUDENT_ID` = `student_query`.`USER_ID`))) ;
 
 -- --------------------------------------------------------
 
@@ -535,7 +502,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `all_appointments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `all_appointments`  AS SELECT `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`appointment` join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `all_appointments`  AS SELECT `appointment`.`STUDENT_ID` AS `STUDENT_ID`, `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`appointment` join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) ;
 
 -- --------------------------------------------------------
 
@@ -544,7 +511,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `all_reviews`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `all_reviews`  AS SELECT `review`.`REVIEW_ID` AS `REVIEW_ID`, `review`.`STUDENT_ID` AS `STUDENT_ID`, `review`.`TUTOR_ID` AS `TUTOR_ID`, `user`.`USERNAME` AS `TUTOR`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `NAME`, `review`.`COMMENT` AS `COMMENT`, `review`.`STARS` AS `STARS`, group_concat(distinct `tag`.`NAME` separator ', ') AS `TAGS`, `review`.`DATE` AS `DATE` FROM (((`review` join `tag_bridge` on((`review`.`REVIEW_ID` = `tag_bridge`.`REVIEW_ID`))) join `tag` on((`tag_bridge`.`TAG_ID` = `tag`.`TAG_ID`))) join `user` on((`review`.`TUTOR_ID` = `user`.`USER_ID`))) GROUP BY `review`.`REVIEW_ID` ORDER BY `review`.`DATE` ASC  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `all_reviews`  AS SELECT `review`.`REVIEW_ID` AS `REVIEW_ID`, `review`.`STUDENT_ID` AS `STUDENT_ID`, `review`.`TUTOR_ID` AS `TUTOR_ID`, `user`.`USERNAME` AS `TUTOR`, concat(`user`.`F_NAME`,' ',`user`.`L_NAME`) AS `NAME`, `review`.`COMMENT` AS `COMMENT`, `review`.`STARS` AS `STARS`, group_concat(distinct `tag`.`NAME` separator ', ') AS `TAGS`, `review`.`DATE` AS `DATE` FROM (((`review` join `tag_bridge` on((`review`.`REVIEW_ID` = `tag_bridge`.`REVIEW_ID`))) join `tag` on((`tag_bridge`.`TAG_ID` = `tag`.`TAG_ID`))) join `user` on((`review`.`TUTOR_ID` = `user`.`USER_ID`))) GROUP BY `review`.`REVIEW_ID` ORDER BY `review`.`DATE` ASC ;
 
 -- --------------------------------------------------------
 
@@ -553,7 +520,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `five_star_tutors`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five_star_tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5)  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `five_star_tutors`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (`tutor` join `user` on((`tutor`.`USER_ID` = `user`.`USER_ID`))) WHERE (`tutor`.`AVG_RATING` > 4.5) ;
 
 -- --------------------------------------------------------
 
@@ -562,7 +529,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `tutor_appointments`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`appointment` join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_appointments`  AS SELECT `appointment`.`APPOINTMENT_ID` AS `APPOINTMENT_ID`, `appointment`.`TUTOR_ID` AS `TUTOR_ID`, `appointment`.`LOCATION` AS `LOCATION`, `availability`.`AVAILABILITY_ID` AS `AVAILABILITY_ID`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`appointment` join `availability` on((`appointment`.`AVAILABILITY_ID` = `availability`.`AVAILABILITY_ID`))) ;
 
 -- --------------------------------------------------------
 
@@ -571,7 +538,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `tutor_availability`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`)  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_availability`  AS SELECT `user`.`USERNAME` AS `USERNAME`, `availability`.`DAY` AS `DAY`, `availability`.`START_TIME` AS `START_TIME`, `availability`.`END_TIME` AS `END_TIME` FROM (`user` join `availability`) WHERE ((`availability`.`DAY` = 'Saturday') AND (`availability`.`TUTOR_ID` = `user`.`USER_ID`) AND `user`.`IS_TUTOR`) ;
 
 -- --------------------------------------------------------
 
@@ -580,7 +547,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `tutor_classes`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_classes`  AS SELECT `class`.`CLASS_ID` AS `CLASS_ID`, `class`.`CLASS_CODE` AS `CLASS_CODE`, `class`.`CLASS_NUMBER` AS `CLASS_NUMBER`, `class`.`NAME` AS `NAME`, `class_bridge`.`TUTOR_ID` AS `TUTOR_ID` FROM (`class_bridge` join `class` on((`class`.`CLASS_ID` = `class_bridge`.`CLASS_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_classes`  AS SELECT `class`.`CLASS_ID` AS `CLASS_ID`, `class`.`CLASS_CODE` AS `CLASS_CODE`, `class`.`CLASS_NUMBER` AS `CLASS_NUMBER`, `class`.`NAME` AS `NAME`, `class_bridge`.`TUTOR_ID` AS `TUTOR_ID` FROM (`class_bridge` join `class` on((`class`.`CLASS_ID` = `class_bridge`.`CLASS_ID`))) ;
 
 -- --------------------------------------------------------
 
@@ -589,7 +556,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `tutor_subjects`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_subjects`  AS SELECT `subject_bridge`.`TUTOR_ID` AS `TUTOR_ID`, `subject_bridge`.`SUBJECT_ID` AS `SUBJECT_ID`, `subject`.`NAME` AS `NAME` FROM (`subject_bridge` join `subject` on((`subject_bridge`.`SUBJECT_ID` = `subject`.`SUBJECT_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_subjects`  AS SELECT `subject_bridge`.`TUTOR_ID` AS `TUTOR_ID`, `subject_bridge`.`SUBJECT_ID` AS `SUBJECT_ID`, `subject`.`NAME` AS `NAME` FROM (`subject_bridge` join `subject` on((`subject_bridge`.`SUBJECT_ID` = `subject`.`SUBJECT_ID`))) ;
 
 -- --------------------------------------------------------
 
@@ -598,7 +565,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `tutor_subjects_search`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_subjects_search`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `user`.`EMAIL` AS `EMAIL`, `subject`.`NAME` AS `NAME`, `subject_bridge`.`TUTOR_ID` AS `TUTOR_ID`, `subject_bridge`.`SUBJECT_ID` AS `SUBJECT_ID`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`TUTOR_ID`))) join `tutor` on((`tutor`.`USER_ID` = `subject_bridge`.`TUTOR_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`)))  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tutor_subjects_search`  AS SELECT `user`.`F_NAME` AS `F_NAME`, `user`.`L_NAME` AS `L_NAME`, `user`.`EMAIL` AS `EMAIL`, `subject`.`NAME` AS `NAME`, `subject_bridge`.`TUTOR_ID` AS `TUTOR_ID`, `subject_bridge`.`SUBJECT_ID` AS `SUBJECT_ID`, `tutor`.`AVG_RATING` AS `AVG_RATING` FROM (((`subject_bridge` join `user` on((`user`.`USER_ID` = `subject_bridge`.`TUTOR_ID`))) join `tutor` on((`tutor`.`USER_ID` = `subject_bridge`.`TUTOR_ID`))) join `subject` on((`subject`.`SUBJECT_ID` = `subject_bridge`.`SUBJECT_ID`))) ;
 
 --
 -- Indexes for dumped tables
@@ -701,61 +668,61 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT for table `appointment`
 --
 ALTER TABLE `appointment`
-  MODIFY `APPOINTMENT_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1003;
+  MODIFY `APPOINTMENT_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1009;
 
 --
 -- AUTO_INCREMENT for table `availability`
 --
 ALTER TABLE `availability`
-  MODIFY `AVAILABILITY_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `AVAILABILITY_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `class`
 --
 ALTER TABLE `class`
-  MODIFY `CLASS_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `CLASS_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `class_bridge`
 --
 ALTER TABLE `class_bridge`
-  MODIFY `CLASSES_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `CLASSES_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `review`
 --
 ALTER TABLE `review`
-  MODIFY `REVIEW_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `REVIEW_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `subject`
 --
 ALTER TABLE `subject`
-  MODIFY `SUBJECT_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `SUBJECT_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `subject_bridge`
 --
 ALTER TABLE `subject_bridge`
-  MODIFY `SUBJECT_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `SUBJECT_BRIDGE_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `tag`
 --
 ALTER TABLE `tag`
-  MODIFY `TAG_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
+  MODIFY `TAG_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
 
 --
 -- AUTO_INCREMENT for table `tag_bridge`
 --
 ALTER TABLE `tag_bridge`
-  MODIFY `TAG_BRIDGE_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `TAG_BRIDGE_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `USER_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `USER_ID` int(50) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
 
 --
 -- Constraints for dumped tables
