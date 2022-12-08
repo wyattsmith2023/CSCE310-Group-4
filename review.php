@@ -205,5 +205,7 @@
     ?>
 </p>
 
+<button><a href=<?php echo "/student.php?user_id=".$user_id?>>Back</a></button>
+
 </body>
 </html>

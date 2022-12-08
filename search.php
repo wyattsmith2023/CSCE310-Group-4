@@ -4,6 +4,8 @@
 </form>
 
 <?php
+$user_id = $_GET['user_id'];
+
 include("db.php");
 
 if (isset($_POST['submit'])) {
@@ -39,3 +41,5 @@ if (isset($_POST['submit'])) {
 }
 
 ?>
+
+<button><a href=<?php echo "/student.php?user_id=".$user_id?>>Back</a></button>
