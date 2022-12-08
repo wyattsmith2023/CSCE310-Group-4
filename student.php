@@ -37,6 +37,25 @@
 
   $user_phone_numbers = $mysqli->query("SELECT USERNAME, PHONE FROM user");
 
+  $all_subject = $mysqli->query("SELECT * FROM subject");
+
+
+  // Form data for appointment
+  $a_num_bool = isset($_POST['A_Num']) && !empty($_POST['A_Num']);
+  $a_loc_bool = isset($_POST['A_Loc']) && !empty($_POST['A_Loc']);
+  $s_num_bool = isset($_POST['S_Num']) && !empty($_POST['S_Num']);
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if($a_num_bool && $a_loc_bool && $s_num_bool){ 
+      $tutor_query = "SELECT TUTOR_ID FROM availability WHERE availability.AVAILABILITY_ID = " . $_POST['A_Num'] . ";";
+      $tutor_result = $mysqli->query($tutor_query);
+      $tutor_row = $tutor_result->fetch_assoc();
+      $tutor_id = $tutor_row['TUTOR_ID'];
+      add("appointment", array("STUDENT_ID", "TUTOR_ID", "SUBJECT_ID", "AVAILABILITY_ID", "LOCATION"), array( "'".$user_id."'", "'".$tutor_id."'", "'".$_POST['S_Num']."'", "'".$_POST['A_Num']."'", "'".$_POST['A_Loc']."'"));
+      //add_appointment($_POST['A_Num'], $_POST['A_Loc'], $_POST['S_Num']);
+      header("Refresh:0");
+    }
+  }
+
   //FUNCTIONS
   function update($table, $variable, $value, $where, $id){
     global $mysqli;
@@ -89,12 +108,51 @@
 
   }
 
-  function add_appointment($avail_num, $location) {
-      global $user_id;
-      echo "I am " . $avail_num . "at " . $location . "but " . $user_id;  
+  function add_appointment($avail_num, $location, $subject_num) {
       global $mysqli;
-      $added_appointment = $mysqli->query("INSERT INTO appointment (STUDENT_ID, APPOINTMENT_ID, TUTOR_ID, SUBJECT_ID, AVAILABILITY_ID, LOCATION) VALUES ('1','999', '2', '1', '1', 'Norway');");
+      global $user_id;
+
+      $tutor_query = "SELECT TUTOR_ID FROM availability WHERE availability.AVAILABILITY_ID = " . $avail_num . ";";
+      $tutor_result = $mysqli->query($tutor_query);
+      $tutor_row = $tutor_result->fetch_assoc();
+      $tutor_id = $tutor_row['TUTOR_ID'];
+      $added_appointment_query = "INSERT INTO appointment (STUDENT_ID, TUTOR_ID, SUBJECT_ID, AVAILABILITY_ID, LOCATION) VALUES (" . "'" . $user_id . "','" . $tutor_id . "','" . $subject_num . "','" . $avail_num . "','" . $location . "'" . ");";
+      $added_appointment = $mysqli->query($added_appointment_query);
+      $_POST = array();
   }
+
+  function delete_review($review_id) {
+    global $db_host, $db_user, $db_password, $db_db;
+    $tag_bridge_del = "DELETE FROM tag_bridge WHERE REVIEW_ID=$review_id";
+    $review_del = "DELETE FROM review WHERE REVIEW_ID=$review_id";
+
+    $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
+    $conn->query($tag_bridge_del);
+    $conn->query($review_del);
+    
+    $conn->close();
+}
+
+if(isset($_POST['Delete'])){
+  global $mysqli;
+  $sql = "SELECT REVIEW_ID FROM review WHERE TUTOR_ID =".$user_id." OR STUDENT_ID =".$user_id;
+  $ids = $mysqli->query($sql);
+
+  while($row = mysqli_fetch_array($ids)) {
+      delete_review($row['REVIEW_ID']);
+  }
+
+  drop('appointment','STUDENT_ID', $user_id);
+  drop('appointment','TUTOR_ID', $user_id);
+  drop('class_bridge','TUTOR_ID', $user_id);
+  drop('subject_bridge','TUTOR_ID', $user_id);
+  drop('availability','TUTOR_ID', $user_id);
+  drop('student', 'USER_ID', $user_id);
+  drop('tutor', 'USER_ID', $user_id);
+  drop('user','USER_ID', $user_id);
+
+  header("Location: /index.php");
+}
 
   // function add_appointment($avail_num, $location) {
   //   global $mysqli;
@@ -168,6 +226,7 @@
         echo "<p><strong>Phone: </strong>" . $profile_info["PHONE"] . "</p>";
         edit_button("Phone");
         button_php("Phone", "PHONE");
+
       ?>
   </p>
   <h1>Your Appointments</h1>
@@ -194,11 +253,16 @@
   
   ?></p>
 
-  <h1>Tutor Search</h1>
+  <h1>Tutor Search (by class)</h1>
   <button><a href="/search.php">SEARCH</a></button>
 
   <h1>Write a Review</h1>
-  <button><a href="/review.php">GO</a></button>
+
+  <p>
+  <?php 
+  $path = "/review.php?user_id=" . $user_id;
+  echo "<button><a href='" . $path . "'>GO</a></button>";
+  ?></p>
 
   <h1>Create Appointment</h1>
   <h2>Available appointments: </h2>
@@ -235,16 +299,15 @@
 <input id="A_Num_Entry" name="A_Num" type="text"> 
 <label id="A_Loc" for="A_Loc">Location:</label>
 <input id="A_Loc_Entry" name="A_Loc" type="text"> 
+<?php
+    echo "<label>Subject</label>";
+    echo "<select name=\"S_Num\" size=\"6\">";
+    foreach($all_subject as $subject)
+        echo "<option value=".$subject['SUBJECT_ID'].">".$subject['NAME']."</option>";
+    echo "</select>";
+?>
 <input type="submit">
 </form>
-<?php
-        $a_num_bool = isset($_POST['A_Num']) && !empty($_POST['A_Num']);
-        $a_loc_bool = isset($_POST['A_Loc']) && !empty($_POST['A_Loc']);
-        if($a_num_bool && $a_loc_bool){ 
-          add_appointment($_POST['A_Num'], $_POST['A_Loc']);
-          header("Refresh:0");
-        }
-?>
 
 <h1>Need more help?</h1>
 <h2>We are a community. Here are people to reach out to if you need help!</h2>
@@ -261,7 +324,18 @@
     echo "</tr>";
   }
   echo "</table>";
+
+
   ?>
+</p>
+
+<p>
+<h1 style="color:red">DELETE ACCOUNT</h1>
+<button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back To Select</a></button>
+
+    <form name = "form" action="" method="post">
+        <input type="submit" name="Delete" value="Delete Account">
+    </form>
 </p>
 
 </body>
