@@ -14,7 +14,7 @@
     $db_db
   );
 	
-  // QUERIES
+//**********QUERIES**********//
   if ($mysqli->connect_error) {
     echo 'Errno: '.$mysqli->connect_errno;
     echo '<br>';
@@ -29,7 +29,6 @@
   $appointment_detailed = "SELECT availability.AVAILABILITY_ID, availability.DAY, availability.START_TIME, availability.END_TIME, user.F_NAME, user.L_NAME, tutor.AVG_RATING FROM availability JOIN user ON availability.TUTOR_ID = user.USER_ID JOIN tutor ON availability.TUTOR_ID = tutor.USER_ID";
   $appointments_detailed_list = $mysqli->query($appointment_detailed);
 
-  // $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
   $profile_query = "SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL\n" 
   . "FROM `user`\n" 
   . "WHERE `USER_ID`=$user_id";
@@ -39,24 +38,7 @@
 
   $all_subject = $mysqli->query("SELECT * FROM subject");
 
-
-  // Form data for appointment
-  $a_num_bool = isset($_POST['A_Num']) && !empty($_POST['A_Num']);
-  $a_loc_bool = isset($_POST['A_Loc']) && !empty($_POST['A_Loc']);
-  $s_num_bool = isset($_POST['S_Num']) && !empty($_POST['S_Num']);
-  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if($a_num_bool && $a_loc_bool && $s_num_bool){ 
-      $tutor_query = "SELECT TUTOR_ID FROM availability WHERE availability.AVAILABILITY_ID = " . $_POST['A_Num'] . ";";
-      $tutor_result = $mysqli->query($tutor_query);
-      $tutor_row = $tutor_result->fetch_assoc();
-      $tutor_id = $tutor_row['TUTOR_ID'];
-      add("appointment", array("STUDENT_ID", "TUTOR_ID", "SUBJECT_ID", "AVAILABILITY_ID", "LOCATION"), array( "'".$user_id."'", "'".$tutor_id."'", "'".$_POST['S_Num']."'", "'".$_POST['A_Num']."'", "'".$_POST['A_Loc']."'"));
-      //add_appointment($_POST['A_Num'], $_POST['A_Loc'], $_POST['S_Num']);
-      header("Refresh:0");
-    }
-  }
-
-  //FUNCTIONS
+//**********FUNCTIONS**********//
   function update($table, $variable, $value, $where, $id){
     global $mysqli;
     $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id";            
@@ -90,6 +72,7 @@
 
   function add($table,$columns,$values){
     global $mysqli;
+    global $user_id;
     $sql = "INSERT INTO $table (";
     foreach($columns as $column){
         $sql .= $column . ", ";
@@ -104,7 +87,7 @@
     $sql .= ")";
 
     $query = $mysqli->query($sql);
-    $_POST=array();
+    header("Location: /temp_stu.php?user_id=".$user_id);
 
   }
 
@@ -133,34 +116,62 @@
     $conn->close();
 }
 
-if(isset($_POST['Delete'])){
-  global $mysqli;
-  $sql = "SELECT REVIEW_ID FROM review WHERE TUTOR_ID =".$user_id." OR STUDENT_ID =".$user_id;
-  $ids = $mysqli->query($sql);
-
-  while($row = mysqli_fetch_array($ids)) {
-      delete_review($row['REVIEW_ID']);
+//**********POST Handlers**********//
+  // POST -- Appointment
+  $a_num_bool = isset($_POST['A_Num']) && !empty($_POST['A_Num']);
+  $a_loc_bool = isset($_POST['A_Loc']) && !empty($_POST['A_Loc']);
+  $s_num_bool = isset($_POST['S_Num']) && !empty($_POST['S_Num']);
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if($a_num_bool && $a_loc_bool && $s_num_bool){ 
+      $tutor_query = "SELECT TUTOR_ID FROM availability WHERE availability.AVAILABILITY_ID = " . $_POST['A_Num'] . ";";
+      $tutor_result = $mysqli->query($tutor_query);
+      $tutor_row = $tutor_result->fetch_assoc();
+      $tutor_id = $tutor_row['TUTOR_ID'];
+      add("appointment", array("STUDENT_ID", "TUTOR_ID", "SUBJECT_ID", "AVAILABILITY_ID", "LOCATION"), array( "'".$user_id."'", "'".$tutor_id."'", "'".$_POST['S_Num']."'", "'".$_POST['A_Num']."'", "'".$_POST['A_Loc']."'"));
+      header("Refresh:0");
+    }
   }
 
-  drop('appointment','STUDENT_ID', $user_id);
-  drop('appointment','TUTOR_ID', $user_id);
-  drop('class_bridge','TUTOR_ID', $user_id);
-  drop('subject_bridge','TUTOR_ID', $user_id);
-  drop('availability','TUTOR_ID', $user_id);
-  drop('student', 'USER_ID', $user_id);
-  drop('tutor', 'USER_ID', $user_id);
-  drop('user','USER_ID', $user_id);
+  // POST -- Appointment
+  if (isset($_POST['App_ID']) && !empty($_POST['App_ID'])){
+    drop('appointment','APPOINTMENT_ID',$_POST['App_ID']);
+    header("Refresh:0");
+  }
+  
+  // POST -- Delete Account
+  if(isset($_POST['Delete'])){
+    global $mysqli;
+    $sql = "SELECT REVIEW_ID FROM review WHERE TUTOR_ID =".$user_id." OR STUDENT_ID =".$user_id;
+    $ids = $mysqli->query($sql);
 
-  header("Location: /index.php");
-}
+    while($row = mysqli_fetch_array($ids)) {
+        delete_review($row['REVIEW_ID']);
+    }
 
-  // function add_appointment($avail_num, $location) {
-  //   global $mysqli;
-  //   global $user_id;
-  //   // Need help with this query, making it custom
-  //   echo "<script>console.log("appointment clicked")</script>";
-  //   $mysqli->query("INSERT INTO appointment (STUDENT_ID, APPOINTMENT_ID, TUTOR_ID, SUBJECT_ID, AVAILABILITY_ID, LOCATION) VALUES ('1','999', '1', '1', '1', 'Norway');");
-  // }
+    drop('appointment','STUDENT_ID', $user_id);
+    drop('appointment','TUTOR_ID', $user_id);
+    drop('class_bridge','TUTOR_ID', $user_id);
+    drop('subject_bridge','TUTOR_ID', $user_id);
+    drop('availability','TUTOR_ID', $user_id);
+    drop('student', 'USER_ID', $user_id);
+    drop('tutor', 'USER_ID', $user_id);
+    drop('user','USER_ID', $user_id);
+
+    header("Location: /index.php");
+  }
+
+  // POST -- Name
+  $f_bool = isset($_POST['F_Name']) && !empty($_POST['F_Name']);
+  $l_bool = isset($_POST['L_Name']) && !empty($_POST['L_Name']);
+  if($f_bool || $l_bool){ 
+      if($f_bool){
+          update('user','F_NAME',$_POST['F_Name'], 'USER_ID', $user_id);
+      }
+      if($l_bool){
+          update('user','L_NAME',$_POST['L_Name'], 'USER_ID', $user_id);
+      }
+      header("Refresh:0");
+  }
 
 ?>
 
@@ -199,18 +210,6 @@ if(isset($_POST['Delete'])){
         </form>
 
         <?php
-        $f_bool = isset($_POST['F_Name']) && !empty($_POST['F_Name']);
-        $l_bool = isset($_POST['L_Name']) && !empty($_POST['L_Name']);
-        if($f_bool || $l_bool){ 
-            if($f_bool){
-                update('user','F_NAME',$_POST['F_Name'], 'USER_ID', $user_id);
-            }
-            if($l_bool){
-                update('user','L_NAME',$_POST['L_Name'], 'USER_ID', $user_id);
-            }
-            header("Refresh:0");
-        }
-
         echo "<p><strong>Username: </strong> " . $profile_info["USERNAME"] . "</p>";
         edit_button("Username");
         button_php("Username", "USERNAME");
@@ -235,6 +234,7 @@ if(isset($_POST['Delete'])){
 
   echo "<table>";
   echo "<tr>";
+  echo "<th>ID</th>";
   echo "<th>LOCATION</th>";
   echo "<th>DAY</th>";
   echo "<th>START TIME</th>";
@@ -242,6 +242,7 @@ if(isset($_POST['Delete'])){
   while($row = mysqli_fetch_array($appointments_list))
   {
     echo "<tr>";
+    echo "<th>" . $row["APPOINTMENT_ID"] . "</th>";
     echo "<th>" . $row["LOCATION"] . "</th>";
     echo "<th>" . $row["DAY"] . "</th>";
     echo "<th>" . $row["START_TIME"] . "</th>";
@@ -249,9 +250,13 @@ if(isset($_POST['Delete'])){
     echo "</tr>";
   }
   echo "</table>";
-
-  
   ?></p>
+
+  <form name = "form" action="" method="post">
+    <label id="App_ID" for="App_ID" >ID:</label>
+    <input id="App_ID_Entry" name="App_ID" type="text"> 
+    <input id="App_Delete" type="submit" value="Delete">
+  </form>
 
   <h1>Tutor Search (by class)</h1>
   <button><a href=<?php echo "/search.php?user_id=".$user_id?>>SEARCH</a></button>

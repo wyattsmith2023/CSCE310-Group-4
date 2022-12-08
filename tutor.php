@@ -14,7 +14,7 @@
     $db_db
   );
 	
-  // QUERIES
+//**********QUERIES**********//
   if ($mysqli->connect_error) {
     echo 'Errno: '.$mysqli->connect_errno;
     echo '<br>';
@@ -52,7 +52,7 @@
   $review_query = "SELECT STARS FROM review WHERE TUTOR_ID=$user_id";
   $review = $mysqli->query($review_query);
 
-  //FUNCTIONS
+  //**********FUNCTIONS**********//
   function update($table, $variable, $value, $where, $id){
     global $mysqli;
     $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id";            
@@ -86,6 +86,7 @@
 
   function add($table,$columns,$values){
     global $mysqli;
+    global $user_id;
     $sql = "INSERT INTO $table (";
     foreach($columns as $column){
         $sql .= $column . ", ";
@@ -100,8 +101,6 @@
     $sql .= ")";
 
     $query = $mysqli->query($sql);
-    $_POST=array();
-
   }
 
   function delete_review($review_id) {
@@ -115,6 +114,9 @@
     
     $conn->close();
   }
+
+//**********POST Handler**********//
+  //POST -- Delete Account
   if(isset($_POST['Delete'])){
     global $mysqli;
     $sql = "SELECT REVIEW_ID FROM `review` WHERE TUTOR_ID =".$user_id." OR STUDENT_ID =".$user_id;
@@ -135,6 +137,95 @@
 
     header("Location: /index.php");
   }
+
+  //POST -- Name
+  $f_bool = isset($_POST['F_Name']) && !empty($_POST['F_Name']);
+  $l_bool = isset($_POST['L_Name']) && !empty($_POST['L_Name']);
+  if($f_bool || $l_bool){ 
+    if($f_bool){
+        update('user','F_NAME',$_POST['F_Name'], 'USER_ID', $user_id);
+    }
+    if($l_bool){
+        update('user','L_NAME',$_POST['L_Name'], 'USER_ID', $user_id);
+    }
+    header("Refresh:0");
+  }
+
+  //POST -- Availability
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Ava_Edit'])){
+            if(isset($_POST['ID']) && !empty($_POST['ID'])){
+                $id = $_POST['ID'];
+                if(isset($_POST['Day']) && !empty($_POST['Day'])){
+                    update('availability','DAY',$_POST['Day'],'AVAILABILITY_ID',$id);
+                }
+                if(isset($_POST['Start_Time']) && !empty($_POST['Start_Time'])){
+                    update('availability','START_TIME',$_POST['Start_Time'],'AVAILABILITY_ID',$id);
+                }
+                if(isset($_POST['End_Time']) && !empty($_POST['End_Time'])){
+                    update('availability','END_TIME',$_POST['End_Time'],'AVAILABILITY_ID',$id);
+                }
+                header("Refresh:0");
+            }
+        }
+        else if(isset($_POST['Ava_Add'])){
+            if(isset($_POST['Day']) && isset($_POST['Start_Time']) && isset($_POST['End_Time'])){
+                add('availability', array('TUTOR_ID','DAY','START_TIME','END_TIME'), array($user_id,"'".$_POST['Day']."'", "'".$_POST['Start_Time']."'", "'".$_POST['End_Time']."'"));
+                header("Location: /temp_tutor.php?user_id=".$user_id);
+            }
+        }
+        else if(isset($_POST['Ava_Delete'])){    
+            if(isset($_POST['ID'])){
+                drop('availability','AVAILABILITY_ID',$_POST['ID']);
+            }
+        }
+    }
+
+    // POST -- Appointment
+    if (isset($_POST['App_ID']) && !empty($_POST['App_ID'])){
+        drop('appointment','APPOINTMENT_ID',$_POST['App_ID']);
+        header("Refresh:0");
+    }
+
+    // POST -- Subject
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Sub_Add'])){
+            if(isset($_POST['Subject'])){
+                add('subject', array('NAME'), array("'".$_POST['Subject']."'"));
+                add('subject_bridge', array('TUTOR_ID','SUBJECT_ID'), array("'".$user_id."'","'".$mysqli->insert_id."'"));
+                header("Location: /temp_tutor.php?user_id=".$user_id);
+            }
+        }
+        else if(isset($_POST['Sub_Delete'])){    
+            if(isset($_POST['Sub_ID'])){
+                drop('subject','SUBJECT_ID',$_POST['Sub_ID']);
+                $sub_id = $_POST['Sub_ID'];
+                $sql = "DELETE FROM subject_bridge WHERE SUBJECT_ID = $sub_id AND TUTOR_ID = $user_id";
+                $query = $mysqli->query($sql);
+                header("Location: /temp_tutor.php?user_id=".$user_id);
+            }
+        }
+    }
+
+    // POST -- Class
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Class_Add'])){
+            if(isset($_POST['Code']) && isset($_POST['Number']) && isset($_POST['Name'])){
+                add('class', array('CLASS_CODE','CLASS_NUMBER','NAME'), array("'".$_POST['Code']."'", "'".$_POST['Number']."'", "'".$_POST['Name']."'"));
+                add('class_bridge', array('TUTOR_ID','CLASS_ID'), array("'".$user_id."'","'".$mysqli->insert_id."'"));
+                header("Location: /temp_tutor.php?user_id=".$user_id);
+            }
+        }
+        else if(isset($_POST['Class_Delete'])){    
+            if(isset($_POST['Class_ID'])){
+                drop('class','CLASS_ID',$_POST['Class_ID']);
+                $class_id = $_POST['Class_ID'];
+                $sql = "DELETE FROM class_bridge WHERE CLASS_ID = $class_id AND TUTOR_ID = $user_id";
+                $query = $mysqli->query($sql);
+                header("Refresh:0");
+            }
+        }
+    }
 
   ?>
 
@@ -173,18 +264,6 @@
         </form>
 
         <?php
-        $f_bool = isset($_POST['F_Name']) && !empty($_POST['F_Name']);
-        $l_bool = isset($_POST['L_Name']) && !empty($_POST['L_Name']);
-        if($f_bool || $l_bool){ 
-            if($f_bool){
-                update('user','F_NAME',$_POST['F_Name'], 'USER_ID', $user_id);
-            }
-            if($l_bool){
-                update('user','L_NAME',$_POST['L_Name'], 'USER_ID', $user_id);
-            }
-            header("Refresh:0");
-        }
-
         echo "<p><strong>Username: </strong> " . $profile_info["USERNAME"] . "</p>";
         edit_button("Username");
         button_php("Username", "USERNAME");
@@ -204,8 +283,6 @@
   </p>
     <h1>Your Appointments</h1>
     <p><?php 
-    
-
     echo "<table>";
     echo "<tr>";
     echo "<th>ID</th>";
@@ -230,12 +307,6 @@
             <input id="App_ID_Entry" name="App_ID" type="text"> 
             <input id="App_Delete" type="submit" value="Delete">
     </form>
-    <?php
-        if (isset($_POST['App_ID']) && !empty($_POST['App_ID'])){
-            drop('appointment','APPOINTMENT_ID',$_POST['App_ID']);
-            header("Refresh:0");
-        }
-    ?>
     </p>
     <h1>Your Availability</h1>
     <?php
@@ -255,72 +326,6 @@
         echo "</tr>";
     }
     echo "</table>";
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if(isset($_POST['Ava_Edit'])){
-            if(isset($_POST['ID']) && !empty($_POST['ID'])){
-                $id = $_POST['ID'];
-                if(isset($_POST['Day']) && !empty($_POST['Day'])){
-                    update('availability','DAY',$_POST['Day'],'AVAILABILITY_ID',$id);
-                }
-                if(isset($_POST['Start_Time']) && !empty($_POST['Start_Time'])){
-                    update('availability','START_TIME',$_POST['Start_Time'],'AVAILABILITY_ID',$id);
-                }
-                if(isset($_POST['End_Time']) && !empty($_POST['End_Time'])){
-                    update('availability','END_TIME',$_POST['End_Time'],'AVAILABILITY_ID',$id);
-                }
-                header("Refresh:0");
-            }
-        }
-        else if(isset($_POST['Ava_Add'])){
-            if(isset($_POST['Day']) && isset($_POST['Start_Time']) && isset($_POST['End_Time'])){
-                add('availability', array('TUTOR_ID','DAY','START_TIME','END_TIME'), array($user_id,"'".$_POST['Day']."'", "'".$_POST['Start_Time']."'", "'".$_POST['End_Time']."'"));
-                header("Refresh:0");
-            }
-        }
-        else if(isset($_POST['Ava_Delete'])){    
-            if(isset($_POST['ID'])){
-                drop('availability','AVAILABILITY_ID',$_POST['ID']);
-            }
-        }
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if(isset($_POST['Sub_Add'])){
-            if(isset($_POST['Subject'])){
-                add('subject', array('NAME'), array("'".$_POST['Subject']."'"));
-                add('subject_bridge', array('TUTOR_ID','SUBJECT_ID'), array("'".$user_id."'","'".$mysqli->insert_id."'"));
-                header("Refresh:0");
-            }
-        }
-        else if(isset($_POST['Sub_Delete'])){    
-            if(isset($_POST['Sub_ID'])){
-                drop('subject','SUBJECT_ID',$_POST['Sub_ID']);
-                $sub_id = $_POST['Sub_ID'];
-                $sql = "DELETE FROM subject_bridge WHERE SUBJECT_ID = $sub_id AND TUTOR_ID = $user_id";
-                $query = $mysqli->query($sql);
-                header("Refresh:0");
-            }
-        }
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if(isset($_POST['Class_Add'])){
-            if(isset($_POST['Code']) && isset($_POST['Number']) && isset($_POST['Name'])){
-                add('class', array('CLASS_CODE','CLASS_NUMBER','NAME'), array("'".$_POST['Code']."'", "'".$_POST['Number']."'", "'".$_POST['Name']."'"));
-                add('class_bridge', array('TUTOR_ID','CLASS_ID'), array("'".$user_id."'","'".$mysqli->insert_id."'"));
-                header("Refresh:0");
-            }
-        }
-        else if(isset($_POST['Class_Delete'])){    
-            if(isset($_POST['Class_ID'])){
-                drop('class','CLASS_ID',$_POST['Class_ID']);
-                $class_id = $_POST['Class_ID'];
-                $sql = "DELETE FROM class_bridge WHERE CLASS_ID = $class_id AND TUTOR_ID = $user_id";
-                $query = $mysqli->query($sql);
-                header("Refresh:0");
-            }
-        }
-    }
     ?>
     <button onclick="show('ID');show('ID_Entry');show('Day');show('Day_Entry');show('Start_Time');show('Start_Time_Entry');show('End_Time');show('End_Time_Entry');show('Ava_Edit');">Edit</button>
     <button onclick="show('Day');show('Day_Entry');show('Start_Time');show('Start_Time_Entry');show('End_Time');show('End_Time_Entry');show('Ava_Add');">Add</button>
@@ -371,6 +376,7 @@
     echo "<th>ID</th>";
     echo "<th>CODE</th>";
     echo "<th>NUMBER</th>";
+    echo "<th>NAME</th>";
     while($row = mysqli_fetch_array($class))
     {
         echo "<tr>";

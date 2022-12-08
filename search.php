@@ -10,17 +10,9 @@ include("db.php");
 
 if (isset($_POST['submit'])) {
   $str = mysqli_real_escape_string($conn, $_POST['str']);
-  // $sql = "SELECT tutor_classes.NAME AS 'CLASS_NAME', tutor_classes.CLASS_CODE, tutor_classes.CLASS_NUMBER, 
-  // tutor_classes.TUTOR_ID, tutor_classes.CLASS_ID, tutor_subjects.* DSQ
-  // FROM `tutor_subjects`, `tutor_classes`
   
-  // WHERE tutor_classes.NAME LIKE '%$str%'
-  // OR tutor_classes.CLASS_CODE LIKE '%$str%'
-  // OR tutor_classes.CLASS_NUMBER LIKE'%$str%'
-  // OR tutor_subjects.NAME LIKE '%$str%';";
-  
-  $sql = "SELECT tutor_classes.NAME AS 'CLASS_NAME', tutor_classes.CLASS_CODE, tutor_classes.CLASS_NUMBER, 
-  tutor_classes.TUTOR_ID, tutor_classes.CLASS_ID, tutor_subjects_search.*, tutor.AVG_RATING
+  $sql = "SELECT DISTINCT tutor_classes.NAME AS 'CLASS_NAME', tutor_classes.CLASS_CODE, tutor_classes.CLASS_NUMBER, 
+  tutor_classes.TUTOR_ID, tutor_classes.CLASS_ID, tutor_subjects_search.*
   FROM `tutor_subjects_search`, `tutor_classes`, tutor
   
   WHERE tutor_classes.NAME LIKE '%$str%'

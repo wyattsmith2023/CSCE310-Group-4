@@ -14,7 +14,7 @@
     $db_db
   );
 	
-  // QUERIES
+//**********QUERIES**********//
   if ($mysqli->connect_error) {
     echo 'Errno: '.$mysqli->connect_errno;
     echo '<br>';
@@ -39,104 +39,332 @@
   $all_tags = $mysqli->query("SELECT * FROM tag");
   $all_classes = $mysqli->query("SELECT * FROM class");
 
-  // $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
   $profile_query = "SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL\n" 
   . "FROM `user`\n" 
   . "WHERE `USER_ID`=$user_id";
   $profile = $mysqli->query($profile_query);
 
-  //FUNCTIONS
-  function update($table, $variable, $value, $where, $id){
-    global $mysqli;
-    $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id"; 
-    $mysqli->query($sql);
-  }
+  $availability_query = "SELECT *\n"
+  . "FROM availability\n";
+  $availability = $mysqli->query($availability_query);
 
-  function update_num($table, $variable, $value, $where, $id){
-    global $mysqli;
-    $sql = "UPDATE $table SET $variable=$value WHERE $where=$id";        
-    $mysqli->query($sql);
+//**********POST Handlers**********//
+  //POST -- Users
+  if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['User_Edit'])){
+            if(isset($_POST['User_ID']) && !empty($_POST['User_ID'])){
+                $id = $_POST['User_ID'];
+                if(isset($_POST['Username']) && !empty($_POST['Username'])){
+                    update('user','USERNAME',$_POST['Username'],'USER_ID',$id);
+                }
+                if(isset($_POST['Password']) && !empty($_POST['Password'])){
+                    update('user','PASSWORD',$_POST['Password'],'USER_ID',$id);
+                }
+                if(isset($_POST['First_Name']) && !empty($_POST['First_Name'])){
+                    update('user','F_NAME',$_POST['First_Name'],'USER_ID',$id);
+                }
+                if(isset($_POST['Last_Name']) && !empty($_POST['Last_Name'])){
+                    update('user','L_NAME',$_POST['Last_Name'],'USER_ID',$id);
+                }
+                if(isset($_POST['Email']) && !empty($_POST['Email'])){
+                    update('user','EMAIL',$_POST['Email'],'USER_ID',$id);
+                }
+                if(isset($_POST['Phone']) && !empty($_POST['Phone'])){
+                    update('user','PHONE',$_POST['Phone'],'USER_ID',$id);
+                }
+                if(isset($_POST['Is_Student'])){
+                    update('user','IS_STUDENT',$_POST['Is_Student'],'USER_ID',$id);
+                }
+                if(isset($_POST['Is_Tutor'])){
+                    update('user','IS_TUTOR',$_POST['Is_Tutor'],'USER_ID',$id);
+                }
+                if(isset($_POST['Is_Admin'])){
+                    update('user','IS_ADMIN',$_POST['Is_Admin'],'USER_ID',$id);
+                }
+                
+            }
+                header("Refresh:0");
+        }
+        else if(isset($_POST['User_Add'])){
+            if(isset($_POST['Username']) && isset($_POST['Password']) && isset($_POST['First_Name']) && isset($_POST['Last_Name']) && isset($_POST['Phone']) && isset($_POST['Email']) && isset($_POST['Is_Student']) && isset($_POST['Is_Tutor']) && isset($_POST['Is_Admin'])){
+                add('user', array('USERNAME','PASSWORD','F_NAME','L_NAME','PHONE','EMAIL','IS_STUDENT','IS_TUTOR','IS_ADMIN'), array("'".$_POST['Username']."'", "'".$_POST['Password']."'", "'".$_POST['First_Name']."'", "'".$_POST['Last_Name']."'", "'".$_POST['Phone']."'", "'".$_POST['Email']."'","'".$_POST['Is_Student']."'", "'".$_POST['Is_Tutor']."'", "'".$_POST['Is_Admin']."'"));
+                add('',array(''),array(''));
+            }
+        }
+        else if(isset($_POST['User_Delete'])){    
+            if(isset($_POST['User_ID'])){
+                global $mysqli;
+                $sql = "SELECT REVIEW_ID FROM `review` WHERE TUTOR_ID =".$_POST['User_ID']." OR STUDENT_ID =".$_POST['User_ID'];
+                $ids = $mysqli->query($sql);
+
+                while($row = mysqli_fetch_array($ids)) {
+                    delete_review($row['REVIEW_ID']);
+                }
+
+                drop('appointment','STUDENT_ID', $_POST['User_ID']);
+                drop('appointment','TUTOR_ID', $_POST['User_ID']);
+                drop('class_bridge','TUTOR_ID', $_POST['User_ID']);
+                drop('subject_bridge','TUTOR_ID', $_POST['User_ID']);
+                drop('availability','TUTOR_ID', $_POST['User_ID']);
+                drop('student', 'USER_ID', $_POST['User_ID']);
+                drop('tutor', 'USER_ID', $_POST['User_ID']);
+                drop('user','USER_ID', $_POST['User_ID']);
+            }
+        }
+    }
+    //POST -- Tags
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Tag_Edit'])){
+            if(isset($_POST['Tag_ID']) && !empty($_POST['Tag_ID'])){
+                $id = $_POST['Tag_ID'];
+                if(isset($_POST['Name']) && !empty($_POST['Name'])){
+                    update('tag','NAME',$_POST['Name'],'TAG_ID',$id);
+                }             
+            }
+        }
+        else if(isset($_POST['Tag_Add'])){
+            if(isset($_POST['Name'])){
+                add('tag', array('NAME'), array("'".$_POST['Name']."'"));
+            }
+        }
+        else if(isset($_POST['Tag_Delete'])){    
+            if(isset($_POST['Tag_ID'])){
+                drop('tag_bridge', 'TAG_ID', $_POST['Tag_ID']);
+                drop('tag', 'TAG_ID', $_POST['Tag_ID']);
+            }
+        }
+    }
+
+    //POST -- Subjects
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Subject_Edit'])){
+            if(isset($_POST['Subject_ID2']) && !empty($_POST['Subject_ID2'])){
+                $id = $_POST['Subject_ID2'];
+                if(isset($_POST['Subject_Name']) && !empty($_POST['Subject_Name'])){
+                    update('subject','NAME',$_POST['Subject_Name'],'SUBJECT_ID',$id);
+                }             
+            }
+            header("Refresh:0");
+        }
+        else if(isset($_POST['Subject_Add'])){
+            if(isset($_POST['Subject_Name'])){
+                add('subject', array('NAME'), array("'".$_POST['Subject_Name']."'"));
+                
+            }
+        }
+        else if(isset($_POST['Subject_Delete'])){  
+            //checks to see if subject is currently used in an appointment
+            //subject id for appointments cannot be null, so do not delete if used  
+            if(isset($_POST['Subject_ID2']) && !appt_uses_subject($_POST['Subject_ID2'])){
+                drop('subject_bridge', 'SUBJECT_ID', $_POST['Subject_ID2']);
+                drop('subject', 'SUBJECT_ID', $_POST['Subject_ID2']);
+            }
+        }
+    }
+
+    // POST -- Classes
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Class_Edit'])){
+            if(isset($_POST['Class_ID']) && !empty($_POST['Class_ID'])){
+                $id = $_POST['Class_ID'];
+                if(isset($_POST['Class_Code']) && !empty($_POST['Class_Code'])){
+                    update('class','CLASS_CODE',$_POST['Class_Code'],'CLASS_ID',$id);
+                }
+                if(isset($_POST['Class_Number']) && !empty($_POST['Class_Number'])){
+                    update('class','CLASS_NUMBER',$_POST['Class_Number'],'CLASS_ID',$id);
+                }
+                if(isset($_POST['Class_Name']) && !empty($_POST['Class_Name'])){
+                    update('class','NAME',$_POST['Class_Name'],'CLASS_ID',$id);
+                }        
+            }
+            header("Refresh:0");
+        }
+        else if(isset($_POST['Class_Add'])){
+            if(isset($_POST['Class_Code']) && isset($_POST['Class_Number']) && isset($_POST['Class_Name'])){
+                add('class', array('CLASS_CODE', 'CLASS_NUMBER', 'NAME'), array("'".$_POST['Class_Code']."'", "'".$_POST['Class_Number']."'", "'".$_POST['Class_Name']."'"));
+            }
+        }
+        else if(isset($_POST['Class_Delete'])){    
+            if(isset($_POST['Class_ID'])){
+                drop('class_bridge', 'CLASS_ID', $_POST['Class_ID']);
+                drop('class', 'CLASS_ID', $_POST['Class_ID']);
+            }
+        }
+    }
+
+    //POST -- Appointments
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Appointment_Edit'])){
+            if(isset($_POST['Appointment_ID']) && !empty($_POST['Appointment_ID'])){
+                $id = $_POST['Appointment_ID'];
+                if(isset($_POST['Student_ID']) && !empty($_POST['Student_ID'])){
+                    update('appointment','STUDENT_ID',$_POST['Student_ID'],'APPOINTMENT_ID',$id);
+                }
+                if(isset($_POST['Tutor_ID']) && !empty($_POST['Tutor_ID'])){
+                    update('appointment','TUTOR_ID',$_POST['Tutor_ID'],'APPOINTMENT_ID',$id);
+                }
+                if(isset($_POST['Location']) && !empty($_POST['Location'])){
+                    update('appointment','LOCATION',$_POST['Location'],'APPOINTMENT_ID',$id);
+                }
+                if(isset($_POST['Subject_ID']) && !empty($_POST['Subject_ID'])){
+                    update('appointment','SUBJECT_ID',$_POST['Subject_ID'],'APPOINTMENT_ID',$id);
+                }
+                if(isset($_POST['Availability_ID']) && !empty($_POST['Availability_ID'])){
+                    update('appointment','AVAILABILITY_ID',$_POST['Availability_ID'],'APPOINTMENT_ID',$id);
+                }           
+            }
+
+            header("Refresh:0");
+        }
+        else if(isset($_POST['Appointment_Add'])){
+            if(isset($_POST['Student_ID']) && isset($_POST['Tutor_ID']) && isset($_POST['Availability_ID']) && isset($_POST['Subject_ID']) && isset($_POST['Location'])){
+                add('appointment', array('STUDENT_ID','TUTOR_ID','AVAILABILITY_ID','SUBJECT_ID', 'LOCATION'), array("'".$_POST['Student_ID']."'", "'".$_POST['Tutor_ID']."'", "'".$_POST['Availability_ID']."'", "'".$_POST['Subject_ID']."'", "'".$_POST['Location']."'"));
+                header("Refresh:0");
+            }
+        }
+        else if(isset($_POST['Appointment_Delete'])){    
+            if(isset($_POST['Appointment_ID'])){
+                drop('appointment', 'APPOINTMENT_ID', $_POST['Appointment_ID']);
+            }
+        }
+    }
+
+    //POST -- Availability
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Ava_Edit'])){
+            if(isset($_POST['Ava_ID']) && !empty($_POST['Ava_ID'])){
+                $id = $_POST['Ava_ID'];
+                if(isset($_POST['Ava_User_ID']) && !empty($_POST['Ava_User_ID'])){
+                    update('availability','TUTOR_ID',$_POST['Ava_User_Id'],'AVAILABILITY_ID',$id);
+                }
+                if(isset($_POST['Day']) && !empty($_POST['Day'])){
+                    update('availability','DAY',$_POST['Day'],'AVAILABILITY_ID',$id);
+                }
+                if(isset($_POST['Start_Time']) && !empty($_POST['Start_Time'])){
+                    update('availability','START_TIME',$_POST['Start_Time'],'AVAILABILITY_ID',$id);
+                }
+                if(isset($_POST['End_Time']) && !empty($_POST['End_Time'])){
+                    update('availability','END_TIME',$_POST['End_Time'],'AVAILABILITY_ID',$id);
+                }
+                header("Refresh:0");
+            }
+        }
+        else if(isset($_POST['Ava_Add'])){
+            if(isset($_POST['Day']) && isset($_POST['Start_Time']) && isset($_POST['End_Time'])){
+                add('availability', array('TUTOR_ID','DAY','START_TIME','END_TIME'), array("'".$_POST['Ava_User_ID']."'","'".$_POST['Day']."'", "'".$_POST['Start_Time']."'", "'".$_POST['End_Time']."'"));
+                header("Refresh:0");
+            }
+        }
+        else if(isset($_POST['Ava_Delete'])){    
+            if(isset($_POST['Ava_ID'])){
+                drop('availability','AVAILABILITY_ID',$_POST['Ava_ID']);
+            }
+        }
+    }
     
-  }
+    // POST -- Review
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if(isset($_POST['Review_Edit'])){
+            if(isset($_POST['Review_ID']) && !empty($_POST['Review_ID'])){
+                $id = $_POST['Review_ID'];
+                if(isset($_POST['Rev_Student_ID']) && !empty($_POST['Rev_Student_ID'])){
+                    update('review','STUDENT_ID',$_POST['Student_ID'],'REVIEW_ID',$id);
+                }
+                if(isset($_POST['Rev_Tutor_ID']) && !empty($_POST['Rev_Tutor_ID'])){
+                    update('review','TUTOR_ID',$_POST['Tutor_ID'],'REVIEW_ID',$id);
+                }
+                if(isset($_POST['Comment']) && !empty($_POST['Comment'])){
+                    update('review','COMMENT',$_POST['Comment'],'REVIEW_ID',$id);
+                }
+                if(isset($_POST['Stars']) && !empty($_POST['Stars'])){
+                    update('review','STARS',$_POST['Stars'],'REVIEW_ID',$id);
+                }                 
+            }
 
-  function edit_button($elem){
-    echo "<button onclick=\"show('$elem');show('" . $elem . "_Entry');show('" . $elem . "_Submit');\">Edit</button><br>";
-    echo "<form name = \"form\" action=\"\" method=\"post\">";
-    echo "<label id=\"$elem\" for=\"$elem\" style=\"display:none\">$elem:</label>";
-    echo "<input id=\"" . $elem . "_Entry\" name=\"$elem\" type=\"text\" style=\"display:none\">";
-    echo "<input id=\"" . $elem . "_Submit\" type=\"submit\" style=\"display:none\">";
-    echo "</form>";
-  }
+            header("Refresh:0");
+        }
+        else if(isset($_POST['Review_Add'])){
+            if(isset($_POST['Rev_Student_ID']) && isset($_POST['Rev_Tutor_ID']) && isset($_POST['Comment']) && isset($_POST['Stars'])){
+                add('review', array('STUDENT_ID','TUTOR_ID','COMMENT','STARS', 'DATE'), array("'".$_POST['Rev_Student_ID']."'", "'".$_POST['Rev_Tutor_ID']."'", "'".$_POST['Comment']."'", "'".$_POST['Stars']."'", "'".date('Y-m-d')."'"));
+                header("Refresh:0");
+            }
+        }
+        else if(isset($_POST['Review_Delete'])){    
+            if(isset($_POST['Review_ID'])){
+                drop('tag_bridge', 'REVIEW_ID', $_POST['Review_ID']);
+                drop('review', 'REVIEW_ID', $_POST['Review_ID']);
+            }
+        }
+    }
 
-  function button_php($name, $column){
-    global $user_id;
-    global $_POST;
-    if(isset($_POST[$name]) && !empty($_POST[$name])){
-        update('user',$column,$_POST[$name], 'USER_ID', $user_id);
+//**********FUNCTIONS**********//
+    function update($table, $variable, $value, $where, $id){
+        global $mysqli;
+        $sql = "UPDATE $table SET $variable='$value' WHERE $where=$id"; 
+        $mysqli->query($sql);
         header("Refresh:0");
     }
-  }
 
-  function drop($table, $where, $id){
-    global $mysqli;
-    $sql = "DELETE FROM $table WHERE $where = $id";
-    $mysqli->query($sql);
-    header("Refresh:0");
-  }
+    function drop($table, $where, $id){
+        global $mysqli;
+        $sql = "DELETE FROM $table WHERE $where = $id";
+        $mysqli->query($sql);
+        header("Refresh:0");
+    }
 
-  function add($table,$columns,$values){
-    global $mysqli;
-    $sql = "INSERT INTO $table (";
-    foreach($columns as $column){
-        $sql .= $column . ", ";
-    } 
-    $sql = substr($sql, 0, -2);
-    $sql .= ") VALUES (";
+    function add($table,$columns,$values){
+        global $mysqli;
+        global $user_id;
+        $sql = "INSERT INTO $table (";
+        foreach($columns as $column){
+            $sql .= $column . ", ";
+        } 
+        $sql = substr($sql, 0, -2);
+        $sql .= ") VALUES (";
 
-    foreach($values as $value){
-        $sql .= $value . ", ";
-    } 
-    $sql = substr($sql, 0, -2);
-    $sql .= ")";
+        foreach($values as $value){
+            $sql .= $value . ", ";
+        } 
+        $sql = substr($sql, 0, -2);
+        $sql .= ")";
 
-    //echo $sql;
+        $query = $mysqli->query($sql);
+        header("Location: /temp_admin.php?user_id=".$user_id);
 
-    $query = $mysqli->query($sql);
-    $_POST=array();
+    }
 
-  }
+    function edit_button($elem){
+        echo "<button onclick=\"show('$elem');show('" . $elem . "_Entry');show('" . $elem . "_Submit');\">Edit</button><br>";
+        echo "<form name = \"form\" action=\"\" method=\"post\">";
+        echo "<label id=\"$elem\" for=\"$elem\" style=\"display:none\">$elem:</label>";
+        echo "<input id=\"" . $elem . "_Entry\" name=\"$elem\" type=\"text\" style=\"display:none\">";
+        echo "<input id=\"" . $elem . "_Submit\" type=\"submit\" style=\"display:none\">";
+        echo "</form>";
+    }
 
-  function delete_review($review_id) {
-    global $db_host, $db_user, $db_password, $db_db;
-    $tag_bridge_del = "DELETE FROM `tag_bridge` WHERE `REVIEW_ID`=$review_id";
-    $review_del = "DELETE FROM `review` WHERE `REVIEW_ID`=$review_id";
+    function delete_review($review_id) {
+        global $db_host, $db_user, $db_password, $db_db;
+        $tag_bridge_del = "DELETE FROM `tag_bridge` WHERE `REVIEW_ID`=$review_id";
+        $review_del = "DELETE FROM `review` WHERE `REVIEW_ID`=$review_id";
 
-    echo $tag_bridge_del;
-    echo $review_del;
+        echo $tag_bridge_del;
+        echo $review_del;
 
-    $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
-    $conn->query($tag_bridge_del);
-    $conn->query($review_del);
-    
-    $conn->close();
-  }
+        $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
+        $conn->query($tag_bridge_del);
+        $conn->query($review_del);
+        
+        $conn->close();
+    }
 
-  function appt_uses_subject($subject_id) {
-    global $mysqli;
+    function appt_uses_subject($subject_id) {
+        global $mysqli;
 
-    $check = $mysqli->query("SELECT * FROM appointment WHERE SUBJECT_ID = $subject_id");
-    $num_rows = $check->num_rows;
+        $check = $mysqli->query("SELECT * FROM appointment WHERE SUBJECT_ID = $subject_id");
+        $num_rows = $check->num_rows;
 
-    return !($num_rows === 0);
-  }
-
-  // function add_appointment($avail_num, $location) {
-  //   global $mysqli;
-  //   global $user_id;
-  //   // Need help with this query, making it custom
-  //   echo "<script>console.log("appointment clicked")</script>";
-  //   $mysqli->query("INSERT INTO appointment (STUDENT_ID, APPOINTMENT_ID, TUTOR_ID, SUBJECT_ID, AVAILABILITY_ID, LOCATION) VALUES ('1','999', '1', '1', '1', 'Norway');");
-  // }
+        return !($num_rows === 0);
+    }
 
 ?>
 
@@ -212,70 +440,6 @@
             <input id="User_Add" name="User_Add" type="submit" style="display:none">
             <input id="User_Delete" name="User_Delete" type="submit" style="display:none">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['User_Edit'])){
-                if(isset($_POST['User_ID']) && !empty($_POST['User_ID'])){
-                    $id = $_POST['User_ID'];
-                    if(isset($_POST['Username']) && !empty($_POST['Username'])){
-                        update('user','USERNAME',$_POST['Username'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Password']) && !empty($_POST['Password'])){
-                        update('user','PASSWORD',$_POST['Password'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['First_Name']) && !empty($_POST['First_Name'])){
-                        update('user','F_NAME',$_POST['First_Name'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Last_Name']) && !empty($_POST['Last_Name'])){
-                        update('user','L_NAME',$_POST['Last_Name'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Email']) && !empty($_POST['Email'])){
-                        update('user','EMAIL',$_POST['Email'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Phone']) && !empty($_POST['Phone'])){
-                        update('user','PHONE',$_POST['Phone'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Is_Student'])){
-                        update('user','IS_STUDENT',$_POST['Is_Student'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Is_Tutor'])){
-                        update('user','IS_TUTOR',$_POST['Is_Tutor'],'USER_ID',$id);
-                    }
-                    if(isset($_POST['Is_Admin'])){
-                        update('user','IS_ADMIN',$_POST['Is_Admin'],'USER_ID',$id);
-                    }
-                    
-                }
-                    header("Refresh:0");
-            }
-            else if(isset($_POST['User_Add'])){
-                if(isset($_POST['Username']) && isset($_POST['Password']) && isset($_POST['First_Name']) && isset($_POST['Last_Name']) && isset($_POST['Phone']) && isset($_POST['Email']) && isset($_POST['Is_Student']) && isset($_POST['Is_Tutor']) && isset($_POST['Is_Admin'])){
-                    add('user', array('USERNAME','PASSWORD','F_NAME','L_NAME','PHONE','EMAIL','IS_STUDENT','IS_TUTOR','IS_ADMIN'), array("'".$_POST['Username']."'", "'".$_POST['Password']."'", "'".$_POST['First_Name']."'", "'".$_POST['Last_Name']."'", "'".$_POST['Phone']."'", "'".$_POST['Email']."'","'".$_POST['Is_Student']."'", "'".$_POST['Is_Tutor']."'", "'".$_POST['Is_Admin']."'"));
-                    header("Refresh:0");
-                }
-            }
-            else if(isset($_POST['User_Delete'])){    
-                if(isset($_POST['User_ID'])){
-                    global $mysqli;
-                    $sql = "SELECT REVIEW_ID FROM `review` WHERE TUTOR_ID =".$_POST['User_ID']." OR STUDENT_ID =".$_POST['User_ID'];
-                    $ids = $mysqli->query($sql);
-
-                    while($row = mysqli_fetch_array($ids)) {
-                        delete_review($row['REVIEW_ID']);
-                    }
-
-                    drop('appointment','STUDENT_ID', $_POST['User_ID']);
-                    drop('appointment','TUTOR_ID', $_POST['User_ID']);
-                    drop('class_bridge','TUTOR_ID', $_POST['User_ID']);
-                    drop('subject_bridge','TUTOR_ID', $_POST['User_ID']);
-                    drop('availability','TUTOR_ID', $_POST['User_ID']);
-                    drop('student', 'USER_ID', $_POST['User_ID']);
-                    drop('tutor', 'USER_ID', $_POST['User_ID']);
-                    drop('user','USER_ID', $_POST['User_ID']);
-                }
-            }
-        }
-        ?>
     <h2>Update Appointments: </h2>
         <p>
             <?php
@@ -337,43 +501,6 @@
             <input id="Appointment_Add" name="Appointment_Add" type="submit" style="display:none">
             <input id="Appointment_Delete" name="Appointment_Delete" type="submit" style="display:none">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['Appointment_Edit'])){
-                if(isset($_POST['Appointment_ID']) && !empty($_POST['Appointment_ID'])){
-                    $id = $_POST['Appointment_ID'];
-                    if(isset($_POST['Student_ID']) && !empty($_POST['Student_ID'])){
-                        update('appointment','STUDENT_ID',$_POST['Student_ID'],'APPOINTMENT_ID',$id);
-                    }
-                    if(isset($_POST['Tutor_ID']) && !empty($_POST['Tutor_ID'])){
-                        update('appointment','TUTOR_ID',$_POST['Tutor_ID'],'APPOINTMENT_ID',$id);
-                    }
-                    if(isset($_POST['Location']) && !empty($_POST['Location'])){
-                        update('appointment','LOCATION',$_POST['Location'],'APPOINTMENT_ID',$id);
-                    }
-                    if(isset($_POST['Subject_ID']) && !empty($_POST['Subject_ID'])){
-                        update('appointment','SUBJECT_ID',$_POST['Subject_ID'],'APPOINTMENT_ID',$id);
-                    }
-                    if(isset($_POST['Availability_ID']) && !empty($_POST['Availability_ID'])){
-                        update('appointment','AVAILABILITY_ID',$_POST['Availability_ID'],'APPOINTMENT_ID',$id);
-                    }           
-                }
-
-                header("Refresh:0");
-            }
-            else if(isset($_POST['Appointment_Add'])){
-                if(isset($_POST['Student_ID']) && isset($_POST['Tutor_ID']) && isset($_POST['Availability_ID']) && isset($_POST['Subject_ID']) && isset($_POST['Location'])){
-                    add('appointment', array('STUDENT_ID','TUTOR_ID','AVAILABILITY_ID','SUBJECT_ID', 'LOCATION'), array("'".$_POST['Student_ID']."'", "'".$_POST['Tutor_ID']."'", "'".$_POST['Availability_ID']."'", "'".$_POST['Subject_ID']."'", "'".$_POST['Location']."'"));
-                    header("Refresh:0");
-                }
-            }
-            else if(isset($_POST['Appointment_Delete'])){    
-                if(isset($_POST['Appointment_ID'])){
-                    drop('appointment', 'APPOINTMENT_ID', $_POST['APPOINTMENT_ID']);
-                }
-            }
-        }
-        ?>
     <h2>Update Reviews: </h2>
         <p>
         <?php
@@ -383,7 +510,7 @@
             echo "<th>STUDENT ID</th>";
             echo "<th>STUDENT</th>";
             echo "<th>TUTOR ID</th>";
-            echo "<th>TUTOR</th>";
+            echo "<th>TUTOR USERNAME</th>";
             echo "<th>COMMENT</th>";
             echo "<th>STARS</th>";
             echo "<th>TAGS</th>";
@@ -405,16 +532,16 @@
             echo "</table>";
             echo "<form></form>";
         ?>
-        <button onclick="show('Review_ID');show('Review_ID_Entry');show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Comment');show('Comment_Entry');show('Stars');show('Stars_Entry');show('Review_Edit');">Edit</button>
-        <button onclick="show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Comment');show('Comment_Entry');show('Stars');show('Stars_Entry');show('Review_Add');">Add</button>
+        <button onclick="show('Review_ID');show('Review_ID_Entry');show('Rev_Student_ID');show('Rev_Student_ID_Entry');show('Rev_Tutor_ID');show('Rev_Tutor_ID_Entry');show('Comment');show('Comment_Entry');show('Stars');show('Stars_Entry');show('Review_Edit');">Edit</button>
+        <button onclick="show('Rev_Student_ID');show('Rev_Student_ID_Entry');show('Rev_Tutor_ID');show('Rev_Tutor_ID_Entry');show('Comment');show('Comment_Entry');show('Stars');show('Stars_Entry');show('Review_Add');">Add</button>
         <button onclick="show('Review_ID');show('Review_ID_Entry');show('Review_Delete');">Delete</button>
         <form name = "form" action="" method="post">
             <label id="Review_ID" for="Review_ID" style="display:none">ID:</label>
             <input id="Review_ID_Entry" name="Review_ID" type="text" style="display:none"> 
-            <label id="Student_ID" for="Student_ID" style="display:none">Student ID:</label>
-            <input id="Student_ID_Entry" name="Student_ID" type="text" style="display:none"> 
-            <label id="Tutor_ID" for="Tutor_ID" style="display:none">Tutor ID:</label>
-            <input id="Tutor_ID_Entry" name="Tutor_ID" type="text" style="display:none"> 
+            <label id="Rev_Student_ID" for="Rev_Student_ID" style="display:none">Student ID:</label>
+            <input id="Rev_Student_ID_Entry" name="Rev_Student_ID" type="text" style="display:none"> 
+            <label id="Rev_Tutor_ID" for="Rev_Tutor_ID" style="display:none">Tutor ID:</label>
+            <input id="Rev_Tutor_ID_Entry" name="Rev_Tutor_ID" type="text" style="display:none"> 
             <label id="Comment" for="Comment" style="display:none">Comment:</label>
             <input id="Comment_Entry" name="Comment" type="text" style="display:none">
             <label id="Stars" for="Stars" style="display:none">Stars:</label>
@@ -423,41 +550,6 @@
             <input id="Review_Add" name="Review_Add" type="submit" style="display:none">
             <input id="Review_Delete" name="Review_Delete" type="submit" style="display:none">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['Review_Edit'])){
-                if(isset($_POST['Review_ID']) && !empty($_POST['Review_ID'])){
-                    $id = $_POST['Review_ID'];
-                    if(isset($_POST['Student_ID']) && !empty($_POST['Student_ID'])){
-                        update('review','STUDENT_ID',$_POST['Student_ID'],'REVIEW_ID',$id);
-                    }
-                    if(isset($_POST['Tutor_ID']) && !empty($_POST['Tutor_ID'])){
-                        update('review','TUTOR_ID',$_POST['Tutor_ID'],'REVIEW_ID',$id);
-                    }
-                    if(isset($_POST['Comment']) && !empty($_POST['Comment'])){
-                        update('review','COMMENT',$_POST['Comment'],'REVIEW_ID',$id);
-                    }
-                    if(isset($_POST['Stars']) && !empty($_POST['Stars'])){
-                        update('review','STARS',$_POST['Stars'],'REVIEW_ID',$id);
-                    }                 
-                }
-
-                header("Refresh:0");
-            }
-            else if(isset($_POST['Review_Add'])){
-                if(isset($_POST['Student_ID']) && isset($_POST['Tutor_ID']) && isset($_POST['Comment']) && isset($_POST['Stars'])){
-                    add('review', array('STUDENT_ID','TUTOR_ID','COMMENT','STARS', 'DATE'), array("'".$_POST['Student_ID']."'", "'".$_POST['Tutor_ID']."'", "'".$_POST['Comment']."'", "'".$_POST['Stars']."'", "'".date('Y-m-d')."'"));
-                    header("Refresh:0");
-                }
-            }
-            else if(isset($_POST['Review_Delete'])){    
-                if(isset($_POST['Review_ID'])){
-                    drop('tag_bridge', 'REVIEW_ID', $_POST['Review_ID']);
-                    drop('review', 'REVIEW_ID', $_POST['Review_ID']);
-                }
-            }
-        }
-        ?>
         <h2>Update Tags: </h2>
         <p>
             <?php
@@ -486,31 +578,6 @@
             <input id="Tag_Add" name="Tag_Add" type="submit" style="display:none">
             <input id="Tag_Delete" name="Tag_Delete" type="submit" style="display:none">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['Tag_Edit'])){
-                if(isset($_POST['Tag_ID']) && !empty($_POST['Tag_ID'])){
-                    $id = $_POST['Tag_ID'];
-                    if(isset($_POST['Name']) && !empty($_POST['Name'])){
-                        update('tag','NAME',$_POST['Name'],'TAG_ID',$id);
-                    }             
-                }
-                header("Refresh:0");
-            }
-            else if(isset($_POST['Tag_Add'])){
-                if(isset($_POST['Name'])){
-                    add('tag', array('NAME'), array("'".$_POST['Name']."'"));
-                    header("Refresh:0");
-                }
-            }
-            else if(isset($_POST['Tag_Delete'])){    
-                if(isset($_POST['Tag_ID'])){
-                    drop('tag_bridge', 'TAG_ID', $_POST['Tag_ID']);
-                    drop('tag', 'TAG_ID', $_POST['Tag_ID']);
-                }
-            }
-        }
-        ?>
         <h2>Update Classes: </h2>
         <p>
         <?php
@@ -547,37 +614,6 @@
             <input id="Class_Add" name="Class_Add" type="submit" style="display:none">
             <input id="Class_Delete" name="Class_Delete" type="submit" style="display:none">
         </form>
-        <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['Class_Edit'])){
-                if(isset($_POST['Class_ID']) && !empty($_POST['Class_ID'])){
-                    $id = $_POST['Class_ID'];
-                    if(isset($_POST['Class_Code']) && !empty($_POST['Class_Code'])){
-                        update('class','CLASS_CODE',$_POST['Class_Code'],'CLASS_ID',$id);
-                    }
-                    if(isset($_POST['Class_Number']) && !empty($_POST['Class_Number'])){
-                        update('class','CLASS_NUMBER',$_POST['Class_Number'],'CLASS_ID',$id);
-                    }
-                    if(isset($_POST['Class_Name']) && !empty($_POST['Class_Name'])){
-                        update('class','NAME',$_POST['Class_Name'],'CLASS_ID',$id);
-                    }        
-                }
-                header("Refresh:0");
-            }
-            else if(isset($_POST['Class_Add'])){
-                if(isset($_POST['Class_Code']) && isset($_POST['Class_Number']) && isset($_POST['Class_Name'])){
-                    add('class', array('CLASS_CODE', 'CLASS_NUMBER', 'NAME'), array("'".$_POST['Class_Code']."'", "'".$_POST['Class_Number']."'", "'".$_POST['Class_Name']."'"));
-                    header("Refresh:0");
-                }
-            }
-            else if(isset($_POST['Class_Delete'])){    
-                if(isset($_POST['Class_ID'])){
-                    drop('class_bridge', 'CLASS_ID', $_POST['Class_ID']);
-                    drop('class', 'CLASS_ID', $_POST['Class_ID']);
-                }
-            }
-        }
-        ?>
         <h2>Update Subjects: </h2>
         <p>
         <?php
@@ -608,33 +644,49 @@
             <input id="Subject_Add" name="Subject_Add" type="submit" style="display:none">
             <input id="Subject_Delete" name="Subject_Delete" type="submit" style="display:none">
         </form>
+
+        <h2>Update Availability: </h2>
+        <p>
         <?php
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if(isset($_POST['Subject_Edit'])){
-                if(isset($_POST['Subject_ID2']) && !empty($_POST['Subject_ID2'])){
-                    $id = $_POST['Subject_ID2'];
-                    if(isset($_POST['Subject_Name']) && !empty($_POST['Subject_Name'])){
-                        update('subject','NAME',$_POST['Subject_Name'],'SUBJECT_ID',$id);
-                    }             
-                }
-                header("Refresh:0");
+            echo "<table>";
+            echo "<tr>";
+            echo "<th>ID</th>";
+            echo "<th>TUTOR_ID</th>";
+            echo "<th>DAY</th>";
+            echo "<th>START_TIME</th>";
+            echo "<th>END_TIME</th>";
+            echo "</tr>";
+            while($row = mysqli_fetch_array($availability))
+            {
+                echo "<tr>";
+                echo "<th>" . $row["AVAILABILITY_ID"] . "</th>";
+                echo "<th>" . $row["TUTOR_ID"] . "</th>";
+                echo "<th>" . $row["DAY"] . "</th>";
+                echo "<th>" . $row["START_TIME"] . "</th>";
+                echo "<th>" . $row["END_TIME"] . "</th>";
+                echo "</tr>";
             }
-            else if(isset($_POST['Subject_Add'])){
-                if(isset($_POST['Subject_Name'])){
-                    add('subject', array('NAME'), array("'".$_POST['Subject_Name']."'"));
-                    header("Refresh:0");
-                }
-            }
-            else if(isset($_POST['Subject_Delete'])){  
-                //checks to see if subject is currently used in an appointment
-                //subject id for appointments cannot be null, so do not delete if used  
-                if(isset($_POST['Subject_ID2']) && !appt_uses_subject($_POST['Subject_ID2'])){
-                    drop('subject_bridge', 'SUBJECT_ID', $_POST['Subject_ID2']);
-                    drop('subject', 'SUBJECT_ID', $_POST['Subject_ID2']);
-                }
-            }
-        }
+            echo "</table>"; 
         ?>
+        <button onclick="show('Ava_ID');show('Ava_ID_Entry');show('Ava_User_ID');show('Ava_User_ID_Entry');show('Day');show('Day_Entry');show('Start_Time');show('Start_Time_Entry');show('End_Time');show('End_Time_Entry');show('Ava_Edit');">Edit</button>
+    <button onclick="show('Ava_User_ID');show('Ava_User_ID_Entry');show('Day');show('Day_Entry');show('Start_Time');show('Start_Time_Entry');show('End_Time');show('End_Time_Entry');show('Ava_Add');">Add</button>
+    <button onclick="show('Ava_ID');show('Ava_ID_Entry');show('Ava_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="Ava_ID" for="Ava_ID" style="display:none">ID:</label>
+            <input id="Ava_ID_Entry" name="Ava_ID" type="text" style="display:none">
+            <label id="Ava_User_ID" for="Ava_User_ID" style="display:none">Tutor ID:</label>
+            <input id="Ava_User_ID_Entry" name="Ava_User_ID" type="text" style="display:none">  
+            <label id="Day" for="Day" style="display:none">Day:</label>
+            <input id="Day_Entry" name="Day" type="text" style="display:none"> 
+            <label id="Start_Time" for="Start_Time" style="display:none">Start Time:</label>
+            <input id="Start_Time_Entry" name="Start_Time" type="time" style="display:none"> 
+            <label id="End_Time" for="End_Time" style="display:none">End Time:</label>
+            <input id="End_Time_Entry" name="End_Time" type="time" style="display:none">  
+            <input id="Ava_Edit" name="Ava_Edit" type="submit" style="display:none">
+            <input id="Ava_Add" name="Ava_Add" type="submit" style="display:none">
+            <input id="Ava_Delete" name="Ava_Delete" type="submit" style="display:none">
+        </form>
+
         <button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back</a></button>
     </body>
 </html>
