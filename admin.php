@@ -21,13 +21,6 @@
     echo 'Error: '.$mysqli->connect_error;
     exit();
   }
-  
-  $appointment_sql = "SELECT appointment.STUDENT_ID, appointment.LOCATION, availability.DAY, availability.START_TIME, availability.END_TIME \n"
-    . "FROM appointment \n"
-    . "JOIN availability ON appointment.AVAILABILITY_ID = availability.AVAILABILITY_ID \n"
-    . "WHERE STUDENT_ID=$user_id\n";
-
-  $appointments_list = $mysqli->query($appointment_sql);
 
   $appointment_detailed = "SELECT * from `admin_appointments`";
   $appointments_detailed_list = $mysqli->query($appointment_detailed);
@@ -39,6 +32,8 @@
   $reviews_detailed_list = $mysqli->query($reviews_detailed);
 
   $all_subject = $mysqli->query("SELECT * FROM subject");
+  $all_tags = $mysqli->query("SELECT * FROM tag");
+  $all_classes = $mysqli->query("SELECT * FROM class");
 
   // $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
   $profile_query = "SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL\n" 
@@ -100,7 +95,7 @@
     $sql = substr($sql, 0, -2);
     $sql .= ")";
 
-    echo $sql;
+    //echo $sql;
 
     $query = $mysqli->query($sql);
     $_POST=array();
@@ -450,41 +445,125 @@
             }
         }
         ?>
-        <h2>Update Appointments: </h2>
+        <h2>Update Tags: </h2>
         <p>
             <?php
             echo "<table>";
             echo "<tr>";
-            echo "<th>APPT ID</th>";
-            echo "<th>STUDENT ID</th>";
-            echo "<th>STUDENT</th>";
-            echo "<th>TUTOR ID</th>";
-            echo "<th>TUTOR</th>";
-            echo "<th>SUBJECT ID<th>";
-            echo "<th>SUBJECT<th>";
-            echo "<th>AVAIL ID</th>";
-            echo "<th>LOCATION</th>";
-            echo "<th>DAY</th>";
-            echo "<th>START TIME</th>";
-            echo "<th>END TIME</th>";
-            while($row = mysqli_fetch_array($appointments_detailed_list))
+            echo "<th>TAG ID</th>";
+            echo "<th>TAG NAME</th>";
+            while($row = mysqli_fetch_array($all_tags))
             {
                 echo "<tr>";
-                echo "<th>" . $row["APPOINTMENT_ID"] . "</th>";
-                echo "<th>" . $row["STUDENT_ID"] . "</th>";
-                echo "<th>" . $row["STUDENT"] . "</th>";
-                echo "<th>" . $row["TUTOR_ID"] . "</th>";
-                echo "<th>" . $row["TUTOR"] . "</th>";
-                echo "<th>" . $row["SUBJECT_ID"] . "</th>";
-                echo "<th>" . $row["SUBJECT"] . "</th>";
-                echo "<th>" . $row["AVAILABILITY_ID"] . "</th>";
-                echo "<th>" . $row["LOCATION"] . "</th>";
-                echo "<th>" . $row["DAY"] . "</th>";
-                echo "<th>" . $row["START_TIME"] . "</th>";
-                echo "<th>" . $row["END_TIME"] . "</th>";
+                echo "<th>" . $row["TAG_ID"] . "</th>";
+                echo "<th>" . $row["NAME"] . "</th>";
                 echo "</tr>";
             }
             echo "</table>";
+        ?>
+        <button onclick="show('Tag_ID');show('Tag_ID_Entry');show('Name');show('Name_Entry');show('Tag_Edit');">Edit</button>
+        <button onclick="show('Name');show('Name_Entry');show('Tag_Add');">Add</button>        
+        <button onclick="show('Tag_ID');show('Tag_ID_Entry');show('Tag_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="Tag_ID" for="Tag_ID" style="display:none">ID:</label>
+            <input id="Tag_ID_Entry" name="Tag_ID" type="text" style="display:none"> 
+            <label id="Name" for="Name" style="display:none">Name:</label>
+            <input id="Name_Entry" name="Name" type="text" style="display:none"> 
+            <input id="Tag_Edit" name="Tag_Edit" type="submit" style="display:none">
+            <input id="Tag_Add" name="Tag_Add" type="submit" style="display:none">
+            <input id="Tag_Delete" name="Tag_Delete" type="submit" style="display:none">
+        </form>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['Tag_Edit'])){
+                if(isset($_POST['Tag_ID']) && !empty($_POST['Tag_ID'])){
+                    $id = $_POST['Tag_ID'];
+                    if(isset($_POST['Name']) && !empty($_POST['Name'])){
+                        update('tag','NAME',$_POST['Name'],'TAG_ID',$id);
+                    }             
+                }
+                header("Refresh:0");
+            }
+            else if(isset($_POST['Tag_Add'])){
+                if(isset($_POST['Name'])){
+                    add('tag', array('NAME'), array("'".$_POST['Name']."'"));
+                    header("Refresh:0");
+                }
+            }
+            else if(isset($_POST['Tag_Delete'])){    
+                if(isset($_POST['Tag_ID'])){
+                    drop('tag_bridge', 'TAG_ID', $_POST['Tag_ID']);
+                    drop('tag', 'TAG_ID', $_POST['Tag_ID']);
+                }
+            }
+        }
+        ?>
+        <h2>Update Classes: </h2>
+        <p>
+        <?php
+            echo "<table>";
+            echo "<tr>";
+            echo "<th>CLASS ID</th>";
+            echo "<th>CLASS CODE</th>";
+            echo "<th>CLASS NUMBER</th>";
+            echo "<th>NAME</th>";
+            while($row = mysqli_fetch_array($all_classes))
+            {
+                echo "<tr>";
+                echo "<th>" . $row["CLASS_ID"] . "</th>";
+                echo "<th>" . $row["CLASS_CODE"] . "</th>";
+                echo "<th>" . $row["CLASS_NUMBER"] . "</th>";
+                echo "<th>" . $row["NAME"] . "</th>";
+                echo "</tr>";
+            }
+            echo "</table>";
+        ?>
+        <button onclick="show('Class_ID');show('Class_ID_Entry');show('Class_Code');show('Class_Code_Entry');show('Class_Number');show('Class_Number_Entry');show('Class_Name');show('Class_Name_Entry');show('Class_Edit');">Edit</button>
+        <button onclick="show('Class_Code');show('Class_Code_Entry');show('Class_Number');show('Class_Number_Entry');show('Class_Name');show('Class_Name_Entry');show('Class_Add');">Add</button>
+        <button onclick="show('Class_ID');show('Class_ID_Entry');show('Class_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="Class_ID" for="Class_ID" style="display:none">ID:</label>
+            <input id="Class_ID_Entry" name="Class_ID" type="text" style="display:none"> 
+            <label id="Class_Code" for="Class_Code" style="display:none">Class Code:</label>
+            <input id="Class_Code_Entry" name="Class_Code" type="text" style="display:none">
+            <label id="Class_Number" for="Class_Number" style="display:none">Class Number:</label>
+            <input id="Class_Number_Entry" name="Class_Number" type="text" style="display:none"> 
+            <label id="Class_Name" for="Class_Name" style="display:none">Name:</label>
+            <input id="Class_Name_Entry" name="Class_Name" type="text" style="display:none"> 
+            <input id="Class_Edit" name="Class_Edit" type="submit" style="display:none">
+            <input id="Class_Add" name="Class_Add" type="submit" style="display:none">
+            <input id="Class_Delete" name="Class_Delete" type="submit" style="display:none">
+        </form>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['Class_Edit'])){
+                if(isset($_POST['Class_ID']) && !empty($_POST['Class_ID'])){
+                    $id = $_POST['Class_ID'];
+                    if(isset($_POST['Class_Code']) && !empty($_POST['Class_Code'])){
+                        update('class','CLASS_CODE',$_POST['Class_Code'],'CLASS_ID',$id);
+                    }
+                    if(isset($_POST['Class_Number']) && !empty($_POST['Class_Number'])){
+                        update('class','CLASS_NUMBER',$_POST['Class_Number'],'CLASS_ID',$id);
+                    }
+                    if(isset($_POST['Class_Name']) && !empty($_POST['Class_Name'])){
+                        update('class','NAME',$_POST['Class_Name'],'CLASS_ID',$id);
+                    }        
+                }
+                header("Refresh:0");
+            }
+            else if(isset($_POST['Class_Add'])){
+                if(isset($_POST['Class_Code']) && isset($_POST['Class_Number']) && isset($_POST['Class_Name'])){
+                    add('class', array('CLASS_CODE', 'CLASS_NUMBER', 'NAME'), array("'".$_POST['Class_Code']."'", "'".$_POST['Class_Number']."'", "'".$_POST['Class_Name']."'"));
+                    header("Refresh:0");
+                }
+            }
+            else if(isset($_POST['Class_Delete'])){    
+                if(isset($_POST['Class_ID'])){
+                    drop('class_bridge', 'CLASS_ID', $_POST['Class_ID']);
+                    drop('class', 'CLASS_ID', $_POST['Class_ID']);
+                }
+            }
+        }
         ?>
         <button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back</a></button>
     </body>
