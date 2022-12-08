@@ -119,7 +119,16 @@
     $conn->query($review_del);
     
     $conn->close();
-}
+  }
+
+  function appt_uses_subject($subject_id) {
+    global $mysqli;
+
+    $check = $mysqli->query("SELECT * FROM appointment WHERE SUBJECT_ID = $subject_id");
+    $num_rows = $check->num_rows;
+
+    return !($num_rows === 0);
+  }
 
   // function add_appointment($avail_num, $location) {
   //   global $mysqli;
@@ -589,7 +598,7 @@
         <!-- Added the 2 because it gets confused with the subject ID value in appointments section -->
         <button onclick="show('Subject_ID2');show('Subject_ID2_Entry');show('Subject_Name');show('Subject_Name_Entry');show('Subject_Edit');">Edit</button>
         <button onclick="show('Subject_Name');show('Subject_Name_Entry');show('Subject_Add');">Add</button>        
-        <button onclick="show('Subject_ID');show('Subject_ID_Entry');show('Subject_Delete');">Delete</button>
+        <button onclick="show('Subject_ID2');show('Subject_ID2_Entry');show('Subject_Delete');">Delete</button>
         <form name = "form" action="" method="post">
             <label id="Subject_ID2" for="Subject_ID2" style="display:none">ID:</label>
             <input id="Subject_ID2_Entry" name="Subject_ID2" type="text" style="display:none"> 
@@ -616,11 +625,12 @@
                     header("Refresh:0");
                 }
             }
-            else if(isset($_POST['Subject_Delete'])){    
-                if(isset($_POST['Subject_ID'])){
-                    //need to also deal with appointments
-                    drop('subject_bridge', 'SUBJECT_ID', $_POST['Subject_ID']);
-                    drop('subject', 'SUBJECT_ID', $_POST['Subject_ID']);
+            else if(isset($_POST['Subject_Delete'])){  
+                //checks to see if subject is currently used in an appointment
+                //subject id for appointments cannot be null, so do not delete if used  
+                if(isset($_POST['Subject_ID2']) && !appt_uses_subject($_POST['Subject_ID2'])){
+                    drop('subject_bridge', 'SUBJECT_ID', $_POST['Subject_ID2']);
+                    drop('subject', 'SUBJECT_ID', $_POST['Subject_ID2']);
                 }
             }
         }
