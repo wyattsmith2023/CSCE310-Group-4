@@ -39,7 +39,7 @@ if (isset($_GET['username'])){
 ?>
 
 <!DOCTYPE html>
-<html lang="<?php echo $language; ?>">
+<html>
   <head>
     <meta charset="UTF-8">
     <title>Tutoring Serice</title>

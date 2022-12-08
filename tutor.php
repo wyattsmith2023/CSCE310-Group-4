@@ -99,11 +99,41 @@
     $sql = substr($sql, 0, -2);
     $sql .= ")";
 
-//    echo $sql;
-
     $query = $mysqli->query($sql);
     $_POST=array();
 
+  }
+
+  function delete_review($review_id) {
+    global $db_host, $db_user, $db_password, $db_db;
+    $tag_bridge_del = "DELETE FROM `tag_bridge` WHERE `REVIEW_ID`=$review_id";
+    $review_del = "DELETE FROM `review` WHERE `REVIEW_ID`=$review_id";
+
+    $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
+    $conn->query($tag_bridge_del);
+    $conn->query($review_del);
+    
+    $conn->close();
+  }
+  if(isset($_POST['Delete'])){
+    global $mysqli;
+    $sql = "SELECT REVIEW_ID FROM `review` WHERE TUTOR_ID =".$user_id." OR STUDENT_ID =".$user_id;
+    $ids = $mysqli->query($sql);
+
+    while($row = mysqli_fetch_array($ids)) {
+        delete_review($row['REVIEW_ID']);
+    }
+
+    drop('appointment','STUDENT_ID', $_POST['User_ID']);
+    drop('appointment','TUTOR_ID', $_POST['User_ID']);
+    drop('class_bridge','TUTOR_ID', $_POST['User_ID']);
+    drop('subject_bridge','TUTOR_ID', $_POST['User_ID']);
+    drop('availability','TUTOR_ID', $_POST['User_ID']);
+    drop('student', 'USER_ID', $_POST['User_ID']);
+    drop('tutor', 'USER_ID', $_POST['User_ID']);
+    drop('user','USER_ID', $_POST['User_ID']);
+
+    header("Location: /index.php");
   }
 
   ?>
@@ -386,8 +416,16 @@
     }
     echo "</table>";
     echo "Average Rating: ";
-    echo $sum / $total;
+    if ($total > 0){
+        echo $sum / $total;
+    }
     ?>
+    <br>
+    <button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back To Select</a></button>
+
+    <form name = "form" action="" method="post">
+        <input type="submit" name="Delete" value="Delete Account">
+    </form>
 
 </body>
 </html>
