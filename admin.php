@@ -149,7 +149,7 @@
             <?php
             echo "<table>";
             echo "<tr>";
-            echo "<th>USER ID#</th>";
+            echo "<th>USER ID</th>";
             echo "<th>USERNAME</th>";
             echo "<th>PASSWORD</th>";
             echo "<th>FIRST NAME</th>";
@@ -278,6 +278,8 @@
             echo "<th>STUDENT</th>";
             echo "<th>TUTOR ID</th>";
             echo "<th>TUTOR</th>";
+            echo "<th>SUBJECT ID</th>";
+            echo "<th>SUBJECT</th>";
             echo "<th>AVAIL ID</th>";
             echo "<th>LOCATION</th>";
             echo "<th>DAY</th>";
@@ -291,6 +293,8 @@
                 echo "<th>" . $row["STUDENT"] . "</th>";
                 echo "<th>" . $row["TUTOR_ID"] . "</th>";
                 echo "<th>" . $row["TUTOR"] . "</th>";
+                echo "<th>" . $row["SUBJECT_ID"] . "</th>";
+                echo "<th>" . $row["SUBJECT"] . "</th>";
                 echo "<th>" . $row["AVAILABILITY_ID"] . "</th>";
                 echo "<th>" . $row["LOCATION"] . "</th>";
                 echo "<th>" . $row["DAY"] . "</th>";
@@ -299,7 +303,6 @@
                 echo "</tr>";
             }
             echo "</table>";
-            echo "<form></form>";
         ?>
         <button onclick="show('Appointment_ID');show('Appointment_ID_Entry');show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Subject_ID');show('Subject_ID_Entry');show('Availability_ID');show('Availability_ID_Entry');show('Location');show('Location_Entry');show('Appointment_Edit');">Edit</button>
         <button onclick="show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Availability_ID');show('Availability_ID_Entry');show('Subject_ID');show('Subject_ID_Entry');show('Location');show('Location_Entry');show('Appointment_Add');">Add</button>
@@ -446,6 +449,42 @@
                 }
             }
         }
+        ?>
+        <h2>Update Appointments: </h2>
+        <p>
+            <?php
+            echo "<table>";
+            echo "<tr>";
+            echo "<th>APPT ID</th>";
+            echo "<th>STUDENT ID</th>";
+            echo "<th>STUDENT</th>";
+            echo "<th>TUTOR ID</th>";
+            echo "<th>TUTOR</th>";
+            echo "<th>SUBJECT ID<th>";
+            echo "<th>SUBJECT<th>";
+            echo "<th>AVAIL ID</th>";
+            echo "<th>LOCATION</th>";
+            echo "<th>DAY</th>";
+            echo "<th>START TIME</th>";
+            echo "<th>END TIME</th>";
+            while($row = mysqli_fetch_array($appointments_detailed_list))
+            {
+                echo "<tr>";
+                echo "<th>" . $row["APPOINTMENT_ID"] . "</th>";
+                echo "<th>" . $row["STUDENT_ID"] . "</th>";
+                echo "<th>" . $row["STUDENT"] . "</th>";
+                echo "<th>" . $row["TUTOR_ID"] . "</th>";
+                echo "<th>" . $row["TUTOR"] . "</th>";
+                echo "<th>" . $row["SUBJECT_ID"] . "</th>";
+                echo "<th>" . $row["SUBJECT"] . "</th>";
+                echo "<th>" . $row["AVAILABILITY_ID"] . "</th>";
+                echo "<th>" . $row["LOCATION"] . "</th>";
+                echo "<th>" . $row["DAY"] . "</th>";
+                echo "<th>" . $row["START_TIME"] . "</th>";
+                echo "<th>" . $row["END_TIME"] . "</th>";
+                echo "</tr>";
+            }
+            echo "</table>";
         ?>
         <button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back</a></button>
     </body>

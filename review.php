@@ -127,9 +127,9 @@
     <?php
         echo "<table>";
         echo "<tr>";
-        echo "<th>Review ID<th>";
-        echo "<th>Tutor ID<th>";
-        echo "<th>Name<th>";
+        echo "<th>Review ID</th>";
+        echo "<th>Tutor ID</th>";
+        echo "<th>Name</th>";
         echo "<th>Comment</th>";
         echo "<th>Stars</th>";
         echo "<th>Tags</th>";
@@ -204,8 +204,6 @@
         }
     ?>
 </p>
-
-<button><a href=<?php echo "/student.php?user_id=".$user_id?>>Back</a></button>
 
 </body>
 </html>
