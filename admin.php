@@ -73,7 +73,8 @@
     global $mysqli;
     $sql = "DELETE FROM $table WHERE $where = $id";
     $query = $mysqli->query($sql);
-    header("Refresh:0");
+    echo $sql;
+    //header("Refresh:0");
   }
 
   function add($table,$columns,$values){
@@ -96,6 +97,18 @@
 
   }
 
+  function delete_review($review_id) {
+    global $db_host, $db_user, $db_password, $db_db;
+    $tag_bridge_del = "DELETE FROM `tag_bridge` WHERE `REVIEW_ID`=$review_id";
+    $review_del = "DELETE FROM `review` WHERE `REVIEW_ID`=$review_id";
+
+    $conn = new mysqli($db_host, $db_user, $db_password, $db_db);
+    $conn->query($tag_bridge_del);
+    $conn->query($review_del);
+    
+    $conn->close();
+}
+
   // function add_appointment($avail_num, $location) {
   //   global $mysqli;
   //   global $user_id;
@@ -107,6 +120,12 @@
 ?>
 
 <!DOCTYPE html>
+<script>
+    function show(id){
+        elem = document.getElementById(id);
+        elem.style.display = "inline"
+    }
+</script>
 <head>
     <style> h2 { color: green; }</style>
 </head>
@@ -136,15 +155,106 @@
                 echo "<th>" . $row["F_NAME"] . "</th>";
                 echo "<th>" . $row["L_NAME"] . "</th>";
                 echo "<th>" . $row["PHONE"] . "</th>";
-                echo "<th>" . $row["EMAIl"] . "</th>";
+                echo "<th>" . $row["EMAIL"] . "</th>";
                 echo "<th>" . $row["IS_STUDENT"] . "</th>";
-                echo "<th>" . $row["IS_ADMIN"] . "</th>";
                 echo "<th>" . $row["IS_TUTOR"] . "</th>";
                 echo "<th>" . $row["IS_ADMIN"] . "</th>";
                 echo "</tr>";
             }
             echo "</table>";
             echo "<form></form>";
+        ?>
+    <button onclick="show('User_ID');show('User_ID_Entry');show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Edit');">Edit</button>
+    <button onclick="show('Username');show('Username_Entry');show('Password');show('Password_Entry');show('First_Name');show('First_Name_Entry');show('Last_Name');show('Last_Name_Entry');show('Phone');show('Phone_Entry');show('Email');show('Email_Entry');show('Is_Student');show('Is_Student_Entry');show('Is_Tutor');show('Is_Tutor_Entry');show('Is_Admin');show('Is_Admin_Entry');show('User_Add');">Add</button>
+    <button onclick="show('User_ID');show('User_ID_Entry');show('User_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="User_ID" for="User_ID" style="display:none">ID:</label>
+            <input id="User_ID_Entry" name="User_ID" type="text" style="display:none"> 
+            <label id="Username" for="Username" style="display:none">Username:</label>
+            <input id="Username_Entry" name="Username" type="text" style="display:none"> 
+            <label id="Password" for="Password" style="display:none">Password:</label>
+            <input id="Password_Entry" name="Password" type="text" style="display:none"> 
+            <label id="First_Name" for="First_Name" style="display:none">First Name:</label>
+            <input id="First_Name_Entry" name="First_Name" type="text" style="display:none">
+            <label id="Last_Name" for="Last_Name" style="display:none">Last Name:</label>
+            <input id="Last_Name_Entry" name="Last_Name" type="text" style="display:none">  
+            <label id="Phone" for="Phone" style="display:none">Phone:</label>
+            <input id="Phone_Entry" name="Phone" type="text" style="display:none">
+            <label id="Email" for="Email" style="display:none">Email:</label>
+            <input id="Email_Entry" name="Email" type="text" style="display:none">
+            <label id="Is_Student" for="Is_Student" style="display:none">Is Student:</label>
+            <input id="Is_Student_Entry" name="Is_Student" type="text" style="display:none">
+            <label id="Is_Tutor" for="Is_Tutor" style="display:none">Is Tutor:</label>
+            <input id="Is_Tutor_Entry" name="Is_Tutor" type="text" style="display:none">
+            <label id="Is_Admin" for="Is_Admin" style="display:none">Is Admin:</label>
+            <input id="Is_Admin_Entry" name="Is_Admin" type="text" style="display:none">
+            <input id="User_Edit" name="User_Edit" type="submit" style="display:none">
+            <input id="User_Add" name="User_Add" type="submit" style="display:none">
+            <input id="User_Delete" name="User_Delete" type="submit" style="display:none">
+        </form>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['User_Edit'])){
+                if(isset($_POST['User_ID']) && !empty($_POST['User_ID'])){
+                    $id = $_POST['User_ID'];
+                    if(isset($_POST['Username']) && !empty($_POST['Username'])){
+                        update('user','USERNAME',$_POST['Username'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Password']) && !empty($_POST['Password'])){
+                        update('user','PASSWORD',$_POST['Password'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['First_Name']) && !empty($_POST['First_Name'])){
+                        update('user','F_NAME',$_POST['First_Name'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Last_Name']) && !empty($_POST['Last_Name'])){
+                        update('user','L_NAME',$_POST['Last_Name'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Email']) && !empty($_POST['Email'])){
+                        update('user','EMAIL',$_POST['Email'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Phone']) && !empty($_POST['Phone'])){
+                        update('user','PHONE',$_POST['Phone'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Is_Student']) && !empty($_POST['Is_Student'])){
+                        update('user','IS_STUDENT',$_POST['Is_Student'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Is_Tutor']) && !empty($_POST['Is_Tutor'])){
+                        update('user','IS_TUTOR',$_POST['Is_Tutor'],'USER_ID',$id);
+                    }
+                    if(isset($_POST['Is_Admin']) && !empty($_POST['Is_Admin'])){
+                        update('user','IS_ADMIN',$_POST['Is_Admin'],'USER_ID',$id);
+                    }
+                    
+                }
+                    header("Refresh:0");
+            }
+            else if(isset($_POST['User_Add'])){
+                if(isset($_POST['Username']) && isset($_POST['Password']) && isset($_POST['First_Name']) && isset($_POST['Last_Name']) && isset($_POST['Phone']) && isset($_POST['Email']) && isset($_POST['Is_Student']) && isset($_POST['Is_Tutor']) && isset($_POST['Is_Admin'])){
+                    add('user', array('USERNAME','PASSWORD','F_NAME','L_NAME','PHONE','EMAIL','IS_STUDENT','IS_TUTOR','IS_ADMIN'), array("'".$_POST['Username']."'", "'".$_POST['Password']."'", "'".$_POST['First_Name']."'", "'".$_POST['Last_Name']."'", "'".$_POST['Phone']."'", "'".$_POST['Email']."'","'".$_POST['Is_Student']."'", "'".$_POST['Is_Tutor']."'", "'".$_POST['Is_Admin']."'"));
+                    header("Refresh:0");
+                }
+            }
+            else if(isset($_POST['User_Delete'])){    
+                if(isset($_POST['User_ID'])){
+                    global $mysqli;
+                    $sql = "SELECT REVIEW_ID FROM `review` WHERE TUTOR_ID =".$_POST['User_ID']." OR STUDENT_ID =".$_POST['User_ID'];
+                    $ids = $mysqli->query($sql);
+
+                    while($row = mysqli_fetch_array($ids)) {
+                        delete_review($row['REVIEW_ID']);
+                    }
+
+                    drop('appointment','STUDENT_ID', $_POST['User_ID']);
+                    drop('appointment','TUTOR_ID', $_POST['User_ID']);
+                    drop('class_bridge','TUTOR_ID', $_POST['User_ID']);
+                    drop('subject_bridge','TUTOR_ID', $_POST['User_ID']);
+                    drop('availability','TUTOR_ID', $_POST['User_ID']);
+                    drop('student', 'USER_ID', $_POST['User_ID']);
+                    drop('tutor', 'USER_ID', $_POST['User_ID']);
+                    drop('user','USER_ID', $_POST['User_ID']);
+                }
+            }
+        }
         ?>
     <h2>Update Appointments: </h2>
         <p>
@@ -210,5 +320,6 @@
             echo "</table>";
             echo "<form></form>";
         ?>
+        <button><a href=<?php echo "/select.php?user_id=".$user_id?>>Back</a></button>
     </body>
 </html>
