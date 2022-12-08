@@ -31,7 +31,11 @@
   $reviews_detailed = "SELECT `all_reviews`.*, CONCAT(F_NAME, ' ', L_NAME) AS STUDENT FROM `all_reviews` INNER JOIN `user` on STUDENT_ID = `user`.USER_ID";
   $reviews_detailed_list = $mysqli->query($reviews_detailed);
 
-  $all_subject = $mysqli->query("SELECT * FROM subject");
+  //for appt CRUD
+  $all_subjects = $mysqli->query("SELECT * FROM subject");
+
+  //for its own Subject CRUD
+  $all_subjects2 = $mysqli->query("SELECT * FROM subject");
   $all_tags = $mysqli->query("SELECT * FROM tag");
   $all_classes = $mysqli->query("SELECT * FROM class");
 
@@ -314,7 +318,7 @@
             <label id="Subject_ID" for="Subject_ID" style="display:none">Subject:</label>
             <?php
                 echo "<select id=\"Subject_ID_Entry\" name=\"Subject_ID\"style=\"display:none\" size=\"6\">";
-                foreach($all_subject as $subject)
+                foreach($all_subjects as $subject)
                     echo "<option value=".$subject['SUBJECT_ID'].">".$subject['NAME']."</option>";
                 echo "</select>";
             ?> 
@@ -561,6 +565,62 @@
                 if(isset($_POST['Class_ID'])){
                     drop('class_bridge', 'CLASS_ID', $_POST['Class_ID']);
                     drop('class', 'CLASS_ID', $_POST['Class_ID']);
+                }
+            }
+        }
+        ?>
+        <h2>Update Subjects: </h2>
+        <p>
+        <?php
+            echo "<table>";
+            echo "<tr>";
+            echo "<th>SUBJECT ID</th>";
+            echo "<th>NAME</th>";
+            echo "</tr>";
+            while($row = mysqli_fetch_array($all_subjects2))
+            {
+                echo "<tr>";
+                echo "<th>" . $row["SUBJECT_ID"] . "</th>";
+                echo "<th>" . $row["NAME"] . "</th>";
+                echo "</tr>";
+            }
+            echo "</table>"; 
+        ?>
+        <!-- Added the 2 because it gets confused with the subject ID value in appointments section -->
+        <button onclick="show('Subject_ID2');show('Subject_ID2_Entry');show('Subject_Name');show('Subject_Name_Entry');show('Subject_Edit');">Edit</button>
+        <button onclick="show('Subject_Name');show('Subject_Name_Entry');show('Subject_Add');">Add</button>        
+        <button onclick="show('Subject_ID');show('Subject_ID_Entry');show('Subject_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="Subject_ID2" for="Subject_ID2" style="display:none">ID:</label>
+            <input id="Subject_ID2_Entry" name="Subject_ID2" type="text" style="display:none"> 
+            <label id="Subject_Name" for="Subject_Name" style="display:none">Name:</label>
+            <input id="Subject_Name_Entry" name="Subject_Name" type="text" style="display:none"> 
+            <input id="Subject_Edit" name="Subject_Edit" type="submit" style="display:none">
+            <input id="Subject_Add" name="Subject_Add" type="submit" style="display:none">
+            <input id="Subject_Delete" name="Subject_Delete" type="submit" style="display:none">
+        </form>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['Subject_Edit'])){
+                if(isset($_POST['Subject_ID2']) && !empty($_POST['Subject_ID2'])){
+                    $id = $_POST['Subject_ID2'];
+                    if(isset($_POST['Subject_Name']) && !empty($_POST['Subject_Name'])){
+                        update('subject','NAME',$_POST['Subject_Name'],'SUBJECT_ID',$id);
+                    }             
+                }
+                header("Refresh:0");
+            }
+            else if(isset($_POST['Subject_Add'])){
+                if(isset($_POST['Subject_Name'])){
+                    add('subject', array('NAME'), array("'".$_POST['Subject_Name']."'"));
+                    header("Refresh:0");
+                }
+            }
+            else if(isset($_POST['Subject_Delete'])){    
+                if(isset($_POST['Subject_ID'])){
+                    //need to also deal with appointments
+                    drop('subject_bridge', 'SUBJECT_ID', $_POST['Subject_ID']);
+                    drop('subject', 'SUBJECT_ID', $_POST['Subject_ID']);
                 }
             }
         }
