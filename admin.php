@@ -38,6 +38,8 @@
   $reviews_detailed = "SELECT `all_reviews`.*, CONCAT(F_NAME, ' ', L_NAME) AS STUDENT FROM `all_reviews` INNER JOIN `user` on STUDENT_ID = `user`.USER_ID";
   $reviews_detailed_list = $mysqli->query($reviews_detailed);
 
+  $all_subject = $mysqli->query("SELECT * FROM subject");
+
   // $profile_query = $mysqli->query(" SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL FROM `user` WHERE `USER_ID`=$user_id  ");
   $profile_query = "SELECT USERNAME, PASSWORD, F_NAME, L_NAME, PHONE, EMAIL\n" 
   . "FROM `user`\n" 
@@ -97,6 +99,8 @@
     } 
     $sql = substr($sql, 0, -2);
     $sql .= ")";
+
+    echo $sql;
 
     $query = $mysqli->query($sql);
     $_POST=array();
@@ -296,6 +300,68 @@
             }
             echo "</table>";
             echo "<form></form>";
+        ?>
+        <button onclick="show('Appointment_ID');show('Appointment_ID_Entry');show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Subject_ID');show('Subject_ID_Entry');show('Availability_ID');show('Availability_ID_Entry');show('Location');show('Location_Entry');show('Appointment_Edit');">Edit</button>
+        <button onclick="show('Student_ID');show('Student_ID_Entry');show('Tutor_ID');show('Tutor_ID_Entry');show('Availability_ID');show('Availability_ID_Entry');show('Subject_ID');show('Subject_ID_Entry');show('Location');show('Location_Entry');show('Appointment_Add');">Add</button>
+        <button onclick="show('Appointment_ID');show('Appointment_ID_Entry');show('Appointment_Delete');">Delete</button>
+        <form name = "form" action="" method="post">
+            <label id="Appointment_ID" for="Appointment_ID" style="display:none">ID:</label>
+            <input id="Appointment_ID_Entry" name="Appointment_ID" type="text" style="display:none"> 
+            <label id="Student_ID" for="Student_ID" style="display:none">Student ID:</label>
+            <input id="Student_ID_Entry" name="Student_ID" type="text" style="display:none"> 
+            <label id="Tutor_ID" for="Tutor_ID" style="display:none">Tutor ID:</label>
+            <input id="Tutor_ID_Entry" name="Tutor_ID" type="text" style="display:none">
+            <label id="Availability_ID" for="Availability_ID" style="display:none">Availability ID:</label>
+            <input id="Availability_ID_Entry" name="Availability_ID" type="text" style="display:none">
+            <label id="Subject_ID" for="Subject_ID" style="display:none">Subject:</label>
+            <?php
+                echo "<select id=\"Subject_ID_Entry\" name=\"Subject_ID\"style=\"display:none\" size=\"6\">";
+                foreach($all_subject as $subject)
+                    echo "<option value=".$subject['SUBJECT_ID'].">".$subject['NAME']."</option>";
+                echo "</select>";
+            ?> 
+            <label id="Location" for="Location" style="display:none">Location:</label>
+            <input id="Location_Entry" name="Location" type="text" style="display:none">
+            <input id="Appointment_Edit" name="Appointment_Edit" type="submit" style="display:none">
+            <input id="Appointment_Add" name="Appointment_Add" type="submit" style="display:none">
+            <input id="Appointment_Delete" name="Appointment_Delete" type="submit" style="display:none">
+        </form>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if(isset($_POST['Appointment_Edit'])){
+                if(isset($_POST['Appointment_ID']) && !empty($_POST['Appointment_ID'])){
+                    $id = $_POST['Appointment_ID'];
+                    if(isset($_POST['Student_ID']) && !empty($_POST['Student_ID'])){
+                        update('appointment','STUDENT_ID',$_POST['Student_ID'],'APPOINTMENT_ID',$id);
+                    }
+                    if(isset($_POST['Tutor_ID']) && !empty($_POST['Tutor_ID'])){
+                        update('appointment','TUTOR_ID',$_POST['Tutor_ID'],'APPOINTMENT_ID',$id);
+                    }
+                    if(isset($_POST['Location']) && !empty($_POST['Location'])){
+                        update('appointment','LOCATION',$_POST['Location'],'APPOINTMENT_ID',$id);
+                    }
+                    if(isset($_POST['Subject_ID']) && !empty($_POST['Subject_ID'])){
+                        update('appointment','SUBJECT_ID',$_POST['Subject_ID'],'APPOINTMENT_ID',$id);
+                    }
+                    if(isset($_POST['Availability_ID']) && !empty($_POST['Availability_ID'])){
+                        update('appointment','AVAILABILITY_ID',$_POST['Availability_ID'],'APPOINTMENT_ID',$id);
+                    }           
+                }
+
+                header("Refresh:0");
+            }
+            else if(isset($_POST['Appointment_Add'])){
+                if(isset($_POST['Student_ID']) && isset($_POST['Tutor_ID']) && isset($_POST['Availability_ID']) && isset($_POST['Subject_ID']) && isset($_POST['Location'])){
+                    add('appointment', array('STUDENT_ID','TUTOR_ID','AVAILABILITY_ID','SUBJECT_ID', 'LOCATION'), array("'".$_POST['Student_ID']."'", "'".$_POST['Tutor_ID']."'", "'".$_POST['Availability_ID']."'", "'".$_POST['Subject_ID']."'", "'".$_POST['Location']."'"));
+                    header("Refresh:0");
+                }
+            }
+            else if(isset($_POST['Appointment_Delete'])){    
+                if(isset($_POST['Appointment_ID'])){
+                    drop('appointment', 'APPOINTMENT_ID', $_POST['APPOINTMENT_ID']);
+                }
+            }
+        }
         ?>
     <h2>Update Reviews: </h2>
         <p>
