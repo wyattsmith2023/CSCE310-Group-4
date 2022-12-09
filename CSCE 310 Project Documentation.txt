@@ -1,0 +1,49 @@
+CSCE 310 Project Documentation
+
+Github: https://github.com/wyattsmith2023/CSCE310-Group-4
+
+//////Individual Contributions Breakdown/////
+Hamza Raza:
+- Primary developer of search.php
+- Creator of presentation
+
+Jorge Vargas:
+- Primary developer of select.php
+- Primary developer of review.php
+- Co-Developer of admin.php
+
+Landon Palmer:
+- Primary developer of student.php
+- Creator of presentation
+
+Wyatt Smith:
+- Primary developer of tutor.php
+- Primary developer of index.php
+- Co-Developer of admin.php
+- Primary developer of CRUD operations
+
+/////Notes About Functionalities/////
+Search
+- Tutors must have at least one subject and class to appear in seach
+	- Otherwise, tutor profile is considered incomplete and is not displayed
+- Can search by
+	- Class Code 	Ex: CSCE
+	- Class Number 	Ex: 310
+	- Subject		Ex: Science
+
+Subject, Class, Tag
+- Elements can be added multiple times with different IDs
+- Done to permit easier deletion without breaking foreign key constraints
+
+Users: Is_Student, Is_Tutor, Is_Admin
+- These fields cannot be edited
+- Instead an admin must create a new user
+
+Appointment Constraints
+- Elements such as subjects and availabilities have limited deletion due to foreign key constraint
+	- Done to protect appointments from losing data or being deleted without users realizing
+- Tutors and Students can only Add and Delete to prevent confusion involving Edits
+
+Expectations of Users
+- Students have access to Tutor contacts and are expected to shcedule an appointment and then contact a tutor.
+- Tutors wait to be contacted by a student
